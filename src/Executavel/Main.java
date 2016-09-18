@@ -25,7 +25,7 @@ public class Main implements GLEventListener, KeyListener, MouseListener, MouseM
 	private GLU glu;
 	private GLAutoDrawable glDrawable;
 	private int antigoX, antigoY = 0;
-	private double posicaoX = 200.0, posicaoY = 200.0;
+	private double posicaoX = 0, posicaoY = 0;
 	private boolean testeUmPoligono = false ;
 	private List<ObjetoGrafico> listaPoligonos;
 	
@@ -49,6 +49,9 @@ public class Main implements GLEventListener, KeyListener, MouseListener, MouseM
 		
 
 		SRU();
+
+		System.out.println(this.posicaoX);
+		System.out.println(this.posicaoY);
 		
 		if(!this.listaPoligonos.isEmpty()){
 			this.listaPoligonos.get(this.listaPoligonos.size()-1).mostrabBox(this.gl);
@@ -75,39 +78,49 @@ public class Main implements GLEventListener, KeyListener, MouseListener, MouseM
 
 	public void keyTyped(KeyEvent arg0) {}
 	
-	public void mouseEntered(MouseEvent e) {}
+	public void mouseEntered(MouseEvent e) {
+		 System.out.println("4");
+	}
 	  
 	public void mouseExited(MouseEvent e) {}
 
 	public void mousePressed(MouseEvent e) {
-		int tamanhoCartesiano = 200;
-		//if(this.testeUmPoligono == false){
-			ObjetoGrafico poligno = new ObjetoGrafico();
-			poligno.criabBox(this.posicaoX, this.posicaoY);
-			this.listaPoligonos.add(poligno);
-			this.testeUmPoligono = true; 
+		if(this.testeUmPoligono == true){
+		    int movtoX = e.getX() - antigoX;
+		    int movtoY = e.getY() - antigoY;
+		    this.posicaoX += movtoX;
+		    this.posicaoY -= movtoY;
+		    System.out.println("1");
+		    
+		    glDrawable.display();
+		   
+		    this.antigoX = e.getX();
+		    this.antigoY = e.getY();
+	
 			glDrawable.display();
-		//}
+		}
 	}
 	    
 	public void mouseReleased(MouseEvent e) {}
 	    
+	//trabalhando com a bbox no ponto incial por enquanto
 	public void mouseClicked(MouseEvent e) {
-
+		
+		//Cria uma bbox e adiciona na lista
+		if(this.testeUmPoligono == false){
+			ObjetoGrafico poligono = new ObjetoGrafico();
+			poligono.criabBox(this.posicaoX, this.posicaoY);
+			this.listaPoligonos.add(poligono);
+		}
+		
+		//Cria dois pontos na mesma posição
+		this.listaPoligonos.get(0).addPonto(this.posicaoX, this.posicaoY);	
+		
+		this.testeUmPoligono = true; 
+		glDrawable.display();
 	}
 	    
 	public void mouseDragged(MouseEvent e) {
-	    int movtoX = e.getX() - antigoX;
-	    int movtoY = e.getY() - antigoY;
-	    this.posicaoX += movtoX;
-	    this.posicaoY -= movtoY;
-	    
-	    glDrawable.display();
-	   
-	    antigoX = e.getX();
-		antigoY = e.getY();
-
-		glDrawable.display();
 	}
 	    
 	public void mouseMoved(MouseEvent e) {}

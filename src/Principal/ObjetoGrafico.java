@@ -27,9 +27,22 @@ public class ObjetoGrafico {
 		return listaPontos;
 	}
 
-
-	public void addPonto(Point4D ponto) {
-		this.listaPontos.add(ponto);
+	//Sempre que adicionar um ponto substitui o ultimo da lista e adiciona uma copia
+	public void addPonto(double posicaoX, double posicaoY) {
+		Point4D novoPonto = new Point4D(posicaoX, posicaoY, 0, 1);
+		
+		
+		if(this.listaPontos.size() == 0){
+			this.listaPontos.add(novoPonto);
+			this.listaPontos.add(novoPonto);
+			return ;
+		}
+		
+		//Substitui o ultimo atual
+		this.listaPontos.set(this.listaPontos.size()-1, novoPonto);
+		
+		//Adiciona a copia
+		this.listaPontos.add(novoPonto);
 	}
 
 	public int getPrimitiva() {
