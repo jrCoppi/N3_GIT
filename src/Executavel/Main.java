@@ -26,8 +26,10 @@ public class Main implements GLEventListener, KeyListener, MouseListener, MouseM
 	private GLAutoDrawable glDrawable;
 	private int antigoX, antigoY = 0;
 	private double posicaoX = 0, posicaoY = 0;
-	private boolean testeUmPoligono = false ;
 	private List<ObjetoGrafico> listaPoligonos;
+	
+	//Modos 1 - Inserir, 2 = Editar
+	private Integer modo = 1;
 	
 	//Inicia opengl
 	public void init(GLAutoDrawable drawable) {
@@ -39,37 +41,91 @@ public class Main implements GLEventListener, KeyListener, MouseListener, MouseM
 		gl.glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 	}
 	
+	 
 	//exibicaoPrincipal
 	public void display(GLAutoDrawable arg0) {
 		gl.glClear(GL.GL_COLOR_BUFFER_BIT);
-		glu.gluOrtho2D(-400.0f, 400.0f, -400.0f, 400.0f);
+		
 
 		gl.glMatrixMode(GL.GL_MODELVIEW);
 		gl.glLoadIdentity();
 		
-
+		glu.gluOrtho2D(0, 400, 400, 0);
 		SRU();
-
-		System.out.println(this.posicaoX);
-		System.out.println(this.posicaoY);
+		//enquanto movimentar o mouse vai desenhando do ultimo ponto até a posição do mouse
 		
 		if(!this.listaPoligonos.isEmpty()){
 			this.listaPoligonos.get(this.listaPoligonos.size()-1).mostrabBox(this.gl);
+			
+			//Desenha Pontos
+			for (int i = 0; i < this.listaPoligonos.size(); i++) {
+				ArrayList<Point4D> listaPontosAtual = (ArrayList<Point4D>) this.listaPoligonos.get(i).getListaPontos();
+				
+				gl.glColor3f(0.00f, 0.00f, 225.0f);
+				
+				//Verifica qual primitiva usar
+				if(this.listaPoligonos.get(i).getPrimitiva() == 2){
+					gl.glBegin(GL.GL_LINE_LOOP);
+				} else {
+					gl.glBegin(GL.GL_LINE_STRIP);
+				}
+				
+					for ( Point4D ponto : listaPontosAtual) {
+						gl.glVertex2d(ponto.GetX(), ponto.GetY());
+					}
+					
+					if((this.listaPoligonos.get(i).getxRastro() > 0) && (this.modo == 2)){
+						gl.glVertex2d(this.listaPoligonos.get(i).getxRastro(), this.listaPoligonos.get(i).getyRastro());
+					}
+					
+				gl.glEnd();
+			}
 		}
 		
 		gl.glFlush();
 	}	
 
+	private void desenharPonto(Point4D ponto, GL gl){
+		//sempre coloca antes
+		gl.glPointSize(3);
+		
+		gl.glBegin(GL.GL_POINTS);
+		gl.glVertex2d(ponto.GetX(), ponto.GetY());
+		gl.glEnd();
+	}
+	
 	private void recalculaBBox () {
 	}
 
 	public void keyPressed(KeyEvent e) {
+		switch (e.getKeyCode()) {
+			case KeyEvent.VK_P: 
+				//Troca a primitiva atual
+				if(this.listaPoligonos.size() == 0){
+					return ;
+				}
+				
+				this.listaPoligonos.get(this.listaPoligonos.size()-1).trocaPrimitiva();
+	    		glDrawable.display();
+				break;
+			case KeyEvent.VK_V: 
+	
+				if(this.listaPoligonos.get(this.listaPoligonos.size()-1).getListaPontos().size() <= 2){
+					return ;
+				}
+				this.listaPoligonos.get(this.listaPoligonos.size()-1).removePonto();
+				
+	    		glDrawable.display();
+				break;
+		}
 	}
 
 	public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
 	    gl.glMatrixMode(GL.GL_PROJECTION);
 	    gl.glLoadIdentity();
 		gl.glViewport(0, 0, width, height);
+		System.out.println(width);
+		System.out.println(height);
 	}
 
 	public void displayChanged(GLAutoDrawable arg0, boolean arg1, boolean arg2) {}
@@ -79,26 +135,11 @@ public class Main implements GLEventListener, KeyListener, MouseListener, MouseM
 	public void keyTyped(KeyEvent arg0) {}
 	
 	public void mouseEntered(MouseEvent e) {
-		 System.out.println("4");
 	}
 	  
 	public void mouseExited(MouseEvent e) {}
 
 	public void mousePressed(MouseEvent e) {
-		if(this.testeUmPoligono == true){
-		    int movtoX = e.getX() - antigoX;
-		    int movtoY = e.getY() - antigoY;
-		    this.posicaoX += movtoX;
-		    this.posicaoY -= movtoY;
-		    System.out.println("1");
-		    
-		    glDrawable.display();
-		   
-		    this.antigoX = e.getX();
-		    this.antigoY = e.getY();
-	
-			glDrawable.display();
-		}
 	}
 	    
 	public void mouseReleased(MouseEvent e) {}
@@ -106,24 +147,57 @@ public class Main implements GLEventListener, KeyListener, MouseListener, MouseM
 	//trabalhando com a bbox no ponto incial por enquanto
 	public void mouseClicked(MouseEvent e) {
 		
-		//Cria uma bbox e adiciona na lista
-		if(this.testeUmPoligono == false){
+		//Botão direito
+		if(e.getButton() == 3){
+			this.modo = 1;
+			glDrawable.display();
+			return ;
+		}
+		
+		//Chegou, botão esquerdo
+		Point4D novoPonto = new Point4D(e.getX(),  e.getY(), 0, 1);
+		
+		if(this.modo == 1){
+			
+			//Cria uma bbox e adiciona na lista
 			ObjetoGrafico poligono = new ObjetoGrafico();
-			poligono.criabBox(this.posicaoX, this.posicaoY);
+			poligono.criabBox(novoPonto);
 			this.listaPoligonos.add(poligono);
 		}
 		
-		//Cria dois pontos na mesma posição
-		this.listaPoligonos.get(0).addPonto(this.posicaoX, this.posicaoY);	
+		//Atualiza bbox e a lista de pontos
+		this.listaPoligonos.get(this.listaPoligonos.size()-1).atualizabBox(novoPonto);
+		this.listaPoligonos.get(this.listaPoligonos.size()-1).addPonto(novoPonto);	
 		
-		this.testeUmPoligono = true; 
+		this.modo = 2;
+		
 		glDrawable.display();
 	}
 	    
 	public void mouseDragged(MouseEvent e) {
+
 	}
 	    
-	public void mouseMoved(MouseEvent e) {}
+	//Quando o mouse é motivo atualiza o x do rastro
+	//sempre atualiza para zero, caso esta em edição usa a posição do mouse
+	public void mouseMoved(MouseEvent e) {
+
+		if((this.listaPoligonos == null) || (this.listaPoligonos.size() == 0)){
+			return ;
+		}
+		
+		int xRastro = 0;
+		int yRastro = 0;
+		if(this.modo == 2){
+			xRastro = e.getX();
+			yRastro = e.getY();
+		}
+		
+		this.listaPoligonos.get(this.listaPoligonos.size()-1).setxRastro(xRastro);
+		this.listaPoligonos.get(this.listaPoligonos.size()-1).setyRastro(yRastro);
+		
+		glDrawable.display();
+	}
 	
 	public void SRU() {
 		// eixo x

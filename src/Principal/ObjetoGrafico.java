@@ -12,44 +12,70 @@ import Padrao.Point4D;
 public class ObjetoGrafico {
 
 	private List<Point4D> listaPontos;
+	//3 - Line Strip, 2 - Line Loop
 	private int primitiva;
 	private BoundingBox bBox; 
 	private Cor cor;
+	private double xRastro,yRastro;
 	
 	public ObjetoGrafico() {
 		this.listaPontos = new ArrayList<Point4D>();
-		this.primitiva = 0;
+		this.primitiva = 2;
 		this.bBox = null;
 		this.cor = new Cor();
+		this.xRastro = 0;
+		this.yRastro = 0;
 	}
 	
+	public int getTamanhoLista() {
+		return this.getListaPontos().size();
+	}
+
 	public List<Point4D> getListaPontos() {
 		return listaPontos;
 	}
 
+
 	//Sempre que adicionar um ponto substitui o ultimo da lista e adiciona uma copia
-	public void addPonto(double posicaoX, double posicaoY) {
-		Point4D novoPonto = new Point4D(posicaoX, posicaoY, 0, 1);
-		
+	public void addPonto(Point4D ponto) {
+
 		
 		if(this.listaPontos.size() == 0){
-			this.listaPontos.add(novoPonto);
-			this.listaPontos.add(novoPonto);
+			this.listaPontos.add(ponto);
+			this.listaPontos.add(ponto);
 			return ;
 		}
 		
 		//Substitui o ultimo atual
-		this.listaPontos.set(this.listaPontos.size()-1, novoPonto);
+		this.listaPontos.set(this.listaPontos.size()-1, ponto);
 		
 		//Adiciona a copia
-		this.listaPontos.add(novoPonto);
+		this.listaPontos.add(ponto);
+		
+		//Atualiza os pontos de rasto
+		this.xRastro = 0;
+		this.yRastro = 0;
+	}
+	
+	//Remove os dois ultimos pontos e duplica o anteior a eles
+	public void removePonto(){
+		//remove os 2
+		this.listaPontos.remove(this.listaPontos.size()-1);
+		this.listaPontos.remove(this.listaPontos.size()-1);
+		
+		//duplica o anterior
+		this.listaPontos.add(this.listaPontos.get(this.listaPontos.size()-1));
+		
+		//Atualiza os pontos de rasto
+		this.xRastro = 0;
+		this.yRastro = 0;
 	}
 
 	public int getPrimitiva() {
 		return primitiva;
 	}
 
-	public void setPrimitiva(int primitiva) {
+	private void setPrimitiva(int primitiva) {
 		this.primitiva = primitiva;
 	}
 
@@ -57,19 +83,13 @@ public class ObjetoGrafico {
 		return bBox;
 	}
 
-	//Cria bBox criando um espaço de -100 até +100 do x/y atual
-	public void criabBox(double x, double y) {
-		double invervalo = 100;
-		double smallerX = x - invervalo;
-		double smallerY = y - invervalo;
-		double smallerZ = 0;
-		double greaterZ = 0;
-		double greaterX = x + invervalo;
-		double greaterY = y + invervalo; 
-		
-		
-		this.bBox = new BoundingBox(smallerX,smallerY,smallerZ,greaterX,greaterY,greaterZ);
-		this.bBox.processarCentroBBox();
+	public void criabBox(Point4D ponto) {
+		this.bBox = new BoundingBox(ponto.GetX(),ponto.GetY(),ponto.GetZ(),ponto.GetX(),ponto.GetY(),ponto.GetZ());
+		this.atualizabBox(ponto);
+	}
+	
+	public void atualizabBox(Point4D ponto){
+		this.bBox.atualizarBBox(ponto);
 	}
 	
 	public void mostrabBox(GL gl){
@@ -80,7 +100,27 @@ public class ObjetoGrafico {
 		return cor;
 	}
 
-	private void trocaPrimitiva(){
-		
+	public void trocaPrimitiva(){
+		if(this.getPrimitiva() == 3){
+			this.setPrimitiva(2);
+		} else {
+			this.setPrimitiva(3);
+		}
+	}
+
+	public double getxRastro() {
+		return xRastro;
+	}
+
+	public void setxRastro(double xRastro) {
+		this.xRastro = xRastro;
+	}
+
+	public double getyRastro() {
+		return yRastro;
+	}
+
+	public void setyRastro(double yRastro) {
+		this.yRastro = yRastro;
 	}
 }
