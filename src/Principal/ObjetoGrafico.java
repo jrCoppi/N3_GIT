@@ -15,14 +15,23 @@ public class ObjetoGrafico {
 	//3 - Line Strip, 2 - Line Loop
 	private int primitiva;
 	private BoundingBox bBox; 
-	private Cor cor;
+	private float[] cor;
 	private double xRastro,yRastro;
+	private boolean selecionado;
 	
+	public boolean isSelecionado() {
+		return selecionado;
+	}
+
+	public void setSelecionado(boolean selecionado) {
+		this.selecionado = selecionado;
+	}
+
 	public ObjetoGrafico() {
 		this.listaPontos = new ArrayList<Point4D>();
 		this.primitiva = 2;
 		this.bBox = null;
-		this.cor = new Cor();
+		this.cor = Cor.PRETO;
 		this.xRastro = 0;
 		this.yRastro = 0;
 	}
@@ -96,8 +105,12 @@ public class ObjetoGrafico {
 		this.bBox.desenharOpenGLBBox(gl);
 	}
 
-	public Cor getCor() {
+	public float[] getCor()
+	{
 		return cor;
+	}
+	public void setCor(float[] cor) {
+		this.cor = cor;
 	}
 
 	public void trocaPrimitiva(){

@@ -14,6 +14,7 @@ import javax.media.opengl.GLAutoDrawable;
 import javax.media.opengl.GLEventListener;
 import javax.media.opengl.glu.GLU;
 
+import Outros.Cor;
 import Padrao.Point4D;
 import Principal.ObjetoGrafico;
 
@@ -27,6 +28,7 @@ public class Main implements GLEventListener, KeyListener, MouseListener, MouseM
 	private int antigoX, antigoY = 0;
 	private double posicaoX = 0, posicaoY = 0;
 	private List<ObjetoGrafico> listaPoligonos;
+	
 	
 	//Modos 1 - Inserir, 2 = Editar
 	private Integer modo = 1;
@@ -61,8 +63,8 @@ public class Main implements GLEventListener, KeyListener, MouseListener, MouseM
 			for (int i = 0; i < this.listaPoligonos.size(); i++) {
 				ArrayList<Point4D> listaPontosAtual = (ArrayList<Point4D>) this.listaPoligonos.get(i).getListaPontos();
 				
-				gl.glColor3f(0.00f, 0.00f, 225.0f);
-				
+				float[] cor = listaPoligonos.get(i).getCor();
+				gl.glColor3f(cor[0],cor[1],cor[2]);				
 				//Verifica qual primitiva usar
 				if(this.listaPoligonos.get(i).getPrimitiva() == 2){
 					gl.glBegin(GL.GL_LINE_LOOP);
@@ -84,18 +86,7 @@ public class Main implements GLEventListener, KeyListener, MouseListener, MouseM
 		
 		gl.glFlush();
 	}	
-
-	private void desenharPonto(Point4D ponto, GL gl){
-		//sempre coloca antes
-		gl.glPointSize(3);
-		
-		gl.glBegin(GL.GL_POINTS);
-		gl.glVertex2d(ponto.GetX(), ponto.GetY());
-		gl.glEnd();
-	}
-	
-	private void recalculaBBox () {
-	}
+private boolean alterarCor=false;
 
 	public void keyPressed(KeyEvent e) {
 		switch (e.getKeyCode()) {
@@ -117,9 +108,81 @@ public class Main implements GLEventListener, KeyListener, MouseListener, MouseM
 				
 	    		glDrawable.display();
 				break;
+		case KeyEvent.VK_C:
+			if (!alterarCor)
+				alterarCor = true;
+			break;
+		case KeyEvent.VK_1:
+			if (alterarCor)
+				getPolignoSelecionado().setCor(Cor.VERMELHO);
+			alterarCor = false;
+			break;
+		case KeyEvent.VK_2:
+			if (alterarCor)
+				getPolignoSelecionado().setCor(Cor.VERDE);
+			alterarCor = false;
+			glDrawable.display();
+			break;
+		case KeyEvent.VK_3:
+			if (alterarCor)
+				getPolignoSelecionado().setCor(Cor.AZUL);
+			alterarCor = false;
+			glDrawable.display();
+			break;
+		case KeyEvent.VK_4:
+			if (alterarCor)
+				getPolignoSelecionado().setCor(Cor.AMARELO);
+			alterarCor = false;
+			glDrawable.display();
+			break;
+		case KeyEvent.VK_5:
+			if (alterarCor)
+				getPolignoSelecionado().setCor(Cor.ROXO);
+			alterarCor = false;
+			glDrawable.display();
+			break;
+		case KeyEvent.VK_6:
+			if (alterarCor)
+				getPolignoSelecionado().setCor(Cor.MARROM);
+			alterarCor = false;
+			glDrawable.display();
+			break;
+		case KeyEvent.VK_7:
+			if (alterarCor)
+				getPolignoSelecionado().setCor(Cor.LARANJA);
+			alterarCor = false;
+			glDrawable.display();
+			break;
+		case KeyEvent.VK_8:
+			if (alterarCor)
+				getPolignoSelecionado().setCor(Cor.BRANCO);
+			alterarCor = false;
+			glDrawable.display();
+			break;
+		case KeyEvent.VK_9:
+			if (alterarCor)
+				getPolignoSelecionado().setCor(Cor.PRETO);
+			alterarCor = false;
+			glDrawable.display();
+			break;
+				
+				
+				
+				
+	    		
+				
 		}
 	}
+	private ObjetoGrafico getPolignoSelecionado()
+	{
+		for (ObjetoGrafico objetoGrafico : listaPoligonos) {
+			if(objetoGrafico.isSelecionado())
+				return objetoGrafico;
+		}
+		return listaPoligonos.get(listaPoligonos.size()-1); // nao encontrou um selecionado entao retorna o ultimo;
+	}
 
+	//MATRIZ
 	public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
 	    gl.glMatrixMode(GL.GL_PROJECTION);
 	    gl.glLoadIdentity();
