@@ -5,9 +5,6 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
 import javax.media.opengl.DebugGL;
 import javax.media.opengl.GL;
@@ -18,7 +15,6 @@ import javax.media.opengl.glu.GLU;
 import Outros.Cor;
 import Padrao.Point4D;
 import Principal.Mundo;
-import Principal.ObjetoGrafico;
 
 //import Padrao.BoundingBox;
 //import Padrao.Point4D;
@@ -58,23 +54,14 @@ public class Main implements GLEventListener, KeyListener, MouseListener, MouseM
 
 	public void keyPressed(KeyEvent e) {
 		switch (e.getKeyCode()) {
+		
+			//Ações
 			case KeyEvent.VK_P: 
 				//Troca a primitiva atual
-				if(Mundo.getInstance().isListaVazia()){
-					return ;
-				}
-				
 				Mundo.getInstance().trocaPrimitiva();
-	    		glDrawable.display();
 				break;
 			case KeyEvent.VK_V: 
-	
-				if(Mundo.getInstance().listaPoligonos.get(Mundo.getInstance().listaPoligonos.size()-1).getListaPontos().size() <= 2){
-					return ;
-				}
-				Mundo.getInstance().listaPoligonos.get(Mundo.getInstance().listaPoligonos.size()-1).removePonto();
-				
-	    		glDrawable.display();
+				Mundo.getInstance().removePonto();
 				break;
 			case KeyEvent.VK_C:
 				if (!Mundo.getInstance().alterarCor)
@@ -90,35 +77,27 @@ public class Main implements GLEventListener, KeyListener, MouseListener, MouseM
 				break;
 			case KeyEvent.VK_2:
 				Mundo.getInstance().setCor(Cor.VERDE);
-				glDrawable.display();
 				break;
 			case KeyEvent.VK_3:
 				Mundo.getInstance().setCor(Cor.AZUL);
-				glDrawable.display();
 				break;
 			case KeyEvent.VK_4:
 				Mundo.getInstance().setCor(Cor.AMARELO);
-				glDrawable.display();
 				break;
 			case KeyEvent.VK_5:
 				Mundo.getInstance().setCor(Cor.ROXO);
-				glDrawable.display();
 				break;
 			case KeyEvent.VK_6:
 				Mundo.getInstance().setCor(Cor.MARROM);
-				glDrawable.display();
 				break;
 			case KeyEvent.VK_7:
 				Mundo.getInstance().setCor(Cor.LARANJA);
-				glDrawable.display();
 				break;
 			case KeyEvent.VK_8:
 				Mundo.getInstance().setCor(Cor.BRANCO);
-				glDrawable.display();
 				break;
 			case KeyEvent.VK_9:
 				Mundo.getInstance().setCor(Cor.PRETO);
-				glDrawable.display();
 				break;
 				
 			
@@ -129,11 +108,9 @@ public class Main implements GLEventListener, KeyListener, MouseListener, MouseM
 			case KeyEvent.VK_M:
 				Mundo.getInstance().getPolignoSelecionado().exibeMatriz();
 				break;
-
 			case KeyEvent.VK_R:
 				Mundo.getInstance().getPolignoSelecionado().atribuirIdentidade();
 				break;
-
 			case KeyEvent.VK_RIGHT:
 				Mundo.getInstance().getPolignoSelecionado().translacaoXYZ(2.0,0.0,0.0);
 				break;
@@ -146,7 +123,6 @@ public class Main implements GLEventListener, KeyListener, MouseListener, MouseM
 			case KeyEvent.VK_DOWN:
 				Mundo.getInstance().getPolignoSelecionado().translacaoXYZ(0.0,-2.0,0.0);
 				break;
-
 			case KeyEvent.VK_PAGE_UP:
 				Mundo.getInstance().getPolignoSelecionado().escalaXYZ(2.0,2.0);
 				break;
@@ -166,6 +142,7 @@ public class Main implements GLEventListener, KeyListener, MouseListener, MouseM
 				Mundo.getInstance().getPolignoSelecionado().rotacaoZPtoFixo(10.0, new Point4D(-15.0,-15.0,0.0,0.0));
 				break;
 		}
+		glDrawable.display();
 	}
 	
 	//MATRIZ
@@ -201,37 +178,7 @@ public class Main implements GLEventListener, KeyListener, MouseListener, MouseM
 			return ;
 		}
 		
-		//Chegou, botão esquerdo
-		Point4D novoPonto = new Point4D(e.getX(),  e.getY(), 0, 1);
-		
-		if(Mundo.getInstance().modo == 1){
-			
-			//Cria uma bbox e adiciona na lista
-			ObjetoGrafico poligono = new ObjetoGrafico();
-			poligono.criabBox(novoPonto);
-			
-			
-			if((!Mundo.getInstance().isListaVazia()) && (!Mundo.getInstance().inserirRaiz)){
-				Mundo.getInstance().addObjGraficoFilho(poligono);
-			} else {
-				Mundo.getInstance().addObjGrafico(poligono);
-			}
-			/*
-			//Se for inserir raiz reseta os selecionados e seta o novo como selecionado
-			if(this.inserirRaiz){
-				this.atualizaSelecionado();
-				this.arrSelecionado[0] = this.listaPoligonos.size()-1;
-			} else {
-				
-			}*/
-			
-		}
-		//Arrumar para ver qual o oligono sendo editado (pai ou filho) e editar o mesmo e não sempre o pai
-		//Atualiza bbox e a lista de pontos
-		Mundo.getInstance().atualizabBox(novoPonto);
-		Mundo.getInstance().addPonto(novoPonto);	
-		
-		Mundo.getInstance().modo = 2;
+		Mundo.getInstance().mouseClique(e.getX(), e.getY());
 		
 		glDrawable.display();
 	}

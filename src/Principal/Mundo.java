@@ -61,11 +61,11 @@ public class Mundo {
 	}
 	
 	public void addObjGraficoFilho(ObjetoGrafico objGrafico) {
-		this.listaPoligonos.get(this.listaPoligonos.size()-1).getFilhos().add(objGrafico);
+		this.getPolignoSelecionado().getFilhos().add(objGrafico);
 	}
 	
 	public boolean isListaVazia(){
-		return (Mundo.getInstance().getListaObjGrafico().size() == 0);
+		return (this.getListaObjGrafico().size() == 0);
 	}
 
 	public ObjetoGrafico getPoligonoSelecionado() {
@@ -77,20 +77,39 @@ public class Mundo {
 	}
 	
 	public void addPonto(Point4D ponto) {
-		this.listaPoligonos.get(this.listaPoligonos.size()-1).addPonto(ponto);
+		this.getPolignoSelecionado().addPonto(ponto);
 	}
 	
 	public void atualizabBox(Point4D ponto){
-		this.listaPoligonos.get(this.listaPoligonos.size()-1).atualizabBox(ponto);
+		this.getPolignoSelecionado().atualizabBox(ponto);
 	}
 	
 	public void removerPoligono(){
 		
 	}
 	
+	public void removePonto(){
+		if(this.getPolignoSelecionado().getListaPontos().size() <= 2){
+			return ;
+		}
+		this.getPolignoSelecionado().removePonto();
+	}
+	
+	public void trocaPrimitiva(){
+		if(this.isListaVazia()){
+			return ;
+		}
+		this.getPolignoSelecionado().trocaPrimitiva();
+	}
+	
+	public void setCor(float[] cor){
+		if (this.alterarCor)
+			getPolignoPaiSelecionado().setCor(cor);
+		alterarCor = false;
+	}
+	
 	//Retorna o poligono pai selecionado para desenhar bbox
-	private ObjetoGrafico getPolignoPaiSelecionado()
-	{
+	private ObjetoGrafico getPolignoPaiSelecionado(){
 		for (ObjetoGrafico objetoGrafico : listaPoligonos) {
 			if(objetoGrafico.isSelecionado())
 				return objetoGrafico;
@@ -99,27 +118,34 @@ public class Mundo {
 	}
 	
 	//Retorna o poligono selecionado
-	public ObjetoGrafico getPolignoSelecionado()
-	{
-		/*for (ObjetoGrafico objetoGrafico : listaPoligonos) {
-			if(objetoGrafico.isSelecionado())
-				return objetoGrafico;
-		}*/
-		return listaPoligonos.get(listaPoligonos.size()-1); // nao encontrou um selecionado entao retorna o ultimo;
+	public ObjetoGrafico getPolignoSelecionado(){
+		ObjetoGrafico retorno = null;
+		for (ObjetoGrafico objeto : this.listaPoligonos) {
+			if(objeto.isSelecionado()){
+				return objeto;
+			}
+			
+			retorno = this.getPoligonoSelecionadoRecursivo(objeto);
+		}
+		
+		// nao encontrou um selecionado entao retorna o ultimo;
+		if(retorno == null){
+			retorno =  listaPoligonos.get(listaPoligonos.size()-1);
+		}
+		
+		return retorno;
 	}
 	
-	public void trocaPrimitiva(){
-		this.listaPoligonos.get(this.listaPoligonos.size()-1).trocaPrimitiva();
+	//Verifica os filhos dos objetos recursivamente para achar o selecionado
+	public ObjetoGrafico getPoligonoSelecionadoRecursivo(ObjetoGrafico objetoGrafico){
+		for (ObjetoGrafico objeto : objetoGrafico.getFilhos()) {
+			if(objeto.isSelecionado()){
+				return objeto;
+			}
+			return this.getPoligonoSelecionadoRecursivo(objeto);
+		}
+		return null;
 	}
-	
-	public void setCor(float[] cor){
-		if (Mundo.getInstance().alterarCor)
-			getPolignoPaiSelecionado().setCor(cor);
-		alterarCor = false;
-	}
-	
-	
-
 	
 	//zera a lista de selecionados
 	private void atualizaSelecionado(){
@@ -149,11 +175,47 @@ public class Mundo {
 	}
 	
 	public void setxRastro(double xRastro) {
-		this.listaPoligonos.get(this.listaPoligonos.size()-1).setxRastro(xRastro);
+		this.getPolignoSelecionado().setxRastro(xRastro);
 	}
 
 	public void setyRastro(double yRastro) {
-		this.listaPoligonos.get(this.listaPoligonos.size()-1).setyRastro(yRastro);
+		this.getPolignoSelecionado().setyRastro(yRastro);
+	}
+	
+	//Clicou no botçao esquerdo
+	public void mouseClique(int mouseX, int mouseY){
+
+		//Chegou, botão esquerdo
+		Point4D novoPonto = new Point4D(mouseX,  mouseY, 0, 1);
+		
+		if(this.modo == 1){
+			
+			//Cria uma bbox e adiciona na lista
+			ObjetoGrafico poligono = new ObjetoGrafico();
+			poligono.criabBox(novoPonto);
+			
+			
+			if((!this.isListaVazia()) && (!this.inserirRaiz)){
+				this.addObjGraficoFilho(poligono);
+			} else {
+				this.addObjGrafico(poligono);
+			}
+			/*
+			//Se for inserir raiz reseta os selecionados e seta o novo como selecionado
+			if(this.inserirRaiz){
+				this.atualizaSelecionado();
+				this.arrSelecionado[0] = this.listaPoligonos.size()-1;
+			} else {
+				
+			}*/
+			
+		}
+		//Arrumar para ver qual o oligono sendo editado (pai ou filho) e editar o mesmo e não sempre o pai
+		//Atualiza bbox e a lista de pontos
+		this.atualizabBox(novoPonto);
+		this.addPonto(novoPonto);	
+		
+		this.modo = 2;
 	}
 	
 }
