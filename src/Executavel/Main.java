@@ -6,6 +6,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.media.opengl.DebugGL;
@@ -16,6 +17,7 @@ import javax.media.opengl.glu.GLU;
 
 import Outros.Cor;
 import Padrao.Point4D;
+import Principal.Mundo;
 import Principal.ObjetoGrafico;
 
 //import Padrao.BoundingBox;
@@ -27,22 +29,15 @@ public class Main implements GLEventListener, KeyListener, MouseListener, MouseM
 	private GLAutoDrawable glDrawable;
 	private int antigoX, antigoY = 0;
 	private double posicaoX = 0, posicaoY = 0;
-	private List<ObjetoGrafico> listaPoligonos;
-	
-	
-	//Modos 1 - Inserir, 2 = Editar
-	private Integer modo = 1;
 	
 	//Inicia opengl
 	public void init(GLAutoDrawable drawable) {
-		this.listaPoligonos = new ArrayList<ObjetoGrafico>();
 		glDrawable = drawable;
 		gl = drawable.getGL();
 		glu = new GLU();
 		glDrawable.setGL(new DebugGL(gl));
 		gl.glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 	}
-	
 	 
 	//exibicaoPrincipal
 	public void display(GLAutoDrawable arg0) {
@@ -54,134 +49,125 @@ public class Main implements GLEventListener, KeyListener, MouseListener, MouseM
 		
 		glu.gluOrtho2D(0, 400, 400, 0);
 		SRU();
-		//enquanto movimentar o mouse vai desenhando do ultimo ponto até a posição do mouse
 		
-		if(!this.listaPoligonos.isEmpty()){
-			this.listaPoligonos.get(this.listaPoligonos.size()-1).mostrabBox(this.gl);
-			
-			//Desenha Pontos
-			for (int i = 0; i < this.listaPoligonos.size(); i++) {
-				ArrayList<Point4D> listaPontosAtual = (ArrayList<Point4D>) this.listaPoligonos.get(i).getListaPontos();
-				
-				float[] cor = listaPoligonos.get(i).getCor();
-				gl.glColor3f(cor[0],cor[1],cor[2]);				
-				//Verifica qual primitiva usar
-				if(this.listaPoligonos.get(i).getPrimitiva() == 2){
-					gl.glBegin(GL.GL_LINE_LOOP);
-				} else {
-					gl.glBegin(GL.GL_LINE_STRIP);
-				}
-				
-					for ( Point4D ponto : listaPontosAtual) {
-						gl.glVertex2d(ponto.GetX(), ponto.GetY());
-					}
-					
-					if((this.listaPoligonos.get(i).getxRastro() > 0) && (this.modo == 2)){
-						gl.glVertex2d(this.listaPoligonos.get(i).getxRastro(), this.listaPoligonos.get(i).getyRastro());
-					}
-					
-				gl.glEnd();
-			}
-		}
+		//Desenha a tela no mundo
+		Mundo.getInstance().desenhaTela(gl);
 		
 		gl.glFlush();
 	}	
-private boolean alterarCor=false;
 
 	public void keyPressed(KeyEvent e) {
 		switch (e.getKeyCode()) {
 			case KeyEvent.VK_P: 
 				//Troca a primitiva atual
-				if(this.listaPoligonos.size() == 0){
+				if(Mundo.getInstance().isListaVazia()){
 					return ;
 				}
 				
-				this.listaPoligonos.get(this.listaPoligonos.size()-1).trocaPrimitiva();
+				Mundo.getInstance().trocaPrimitiva();
 	    		glDrawable.display();
 				break;
 			case KeyEvent.VK_V: 
 	
-				if(this.listaPoligonos.get(this.listaPoligonos.size()-1).getListaPontos().size() <= 2){
+				if(Mundo.getInstance().listaPoligonos.get(Mundo.getInstance().listaPoligonos.size()-1).getListaPontos().size() <= 2){
 					return ;
 				}
-				this.listaPoligonos.get(this.listaPoligonos.size()-1).removePonto();
+				Mundo.getInstance().listaPoligonos.get(Mundo.getInstance().listaPoligonos.size()-1).removePonto();
 				
 	    		glDrawable.display();
 				break;
-		case KeyEvent.VK_C:
-			if (!alterarCor)
-				alterarCor = true;
-			break;
-		case KeyEvent.VK_1:
-			if (alterarCor)
-				getPolignoSelecionado().setCor(Cor.VERMELHO);
-			alterarCor = false;
-			break;
-		case KeyEvent.VK_2:
-			if (alterarCor)
-				getPolignoSelecionado().setCor(Cor.VERDE);
-			alterarCor = false;
-			glDrawable.display();
-			break;
-		case KeyEvent.VK_3:
-			if (alterarCor)
-				getPolignoSelecionado().setCor(Cor.AZUL);
-			alterarCor = false;
-			glDrawable.display();
-			break;
-		case KeyEvent.VK_4:
-			if (alterarCor)
-				getPolignoSelecionado().setCor(Cor.AMARELO);
-			alterarCor = false;
-			glDrawable.display();
-			break;
-		case KeyEvent.VK_5:
-			if (alterarCor)
-				getPolignoSelecionado().setCor(Cor.ROXO);
-			alterarCor = false;
-			glDrawable.display();
-			break;
-		case KeyEvent.VK_6:
-			if (alterarCor)
-				getPolignoSelecionado().setCor(Cor.MARROM);
-			alterarCor = false;
-			glDrawable.display();
-			break;
-		case KeyEvent.VK_7:
-			if (alterarCor)
-				getPolignoSelecionado().setCor(Cor.LARANJA);
-			alterarCor = false;
-			glDrawable.display();
-			break;
-		case KeyEvent.VK_8:
-			if (alterarCor)
-				getPolignoSelecionado().setCor(Cor.BRANCO);
-			alterarCor = false;
-			glDrawable.display();
-			break;
-		case KeyEvent.VK_9:
-			if (alterarCor)
-				getPolignoSelecionado().setCor(Cor.PRETO);
-			alterarCor = false;
-			glDrawable.display();
-			break;
+			case KeyEvent.VK_C:
+				if (!Mundo.getInstance().alterarCor)
+					Mundo.getInstance().alterarCor = true;
+				break;
+			case KeyEvent.VK_F:
+				Mundo.getInstance().inserirRaiz = !Mundo.getInstance().inserirRaiz;
+				break;
 				
+			//Cores
+			case KeyEvent.VK_1:
+				Mundo.getInstance().setCor(Cor.VERMELHO);
+				break;
+			case KeyEvent.VK_2:
+				Mundo.getInstance().setCor(Cor.VERDE);
+				glDrawable.display();
+				break;
+			case KeyEvent.VK_3:
+				Mundo.getInstance().setCor(Cor.AZUL);
+				glDrawable.display();
+				break;
+			case KeyEvent.VK_4:
+				Mundo.getInstance().setCor(Cor.AMARELO);
+				glDrawable.display();
+				break;
+			case KeyEvent.VK_5:
+				Mundo.getInstance().setCor(Cor.ROXO);
+				glDrawable.display();
+				break;
+			case KeyEvent.VK_6:
+				Mundo.getInstance().setCor(Cor.MARROM);
+				glDrawable.display();
+				break;
+			case KeyEvent.VK_7:
+				Mundo.getInstance().setCor(Cor.LARANJA);
+				glDrawable.display();
+				break;
+			case KeyEvent.VK_8:
+				Mundo.getInstance().setCor(Cor.BRANCO);
+				glDrawable.display();
+				break;
+			case KeyEvent.VK_9:
+				Mundo.getInstance().setCor(Cor.PRETO);
+				glDrawable.display();
+				break;
 				
-				
-				
-	    		
-				
-		}
-	}
-	private ObjetoGrafico getPolignoSelecionado()
-	{
-		for (ObjetoGrafico objetoGrafico : listaPoligonos) {
-			if(objetoGrafico.isSelecionado())
-				return objetoGrafico;
-		}
-		return listaPoligonos.get(listaPoligonos.size()-1); // nao encontrou um selecionado entao retorna o ultimo;
-	}
+			
+			//Movimentos em tela	
+			case KeyEvent.VK_E:
+				Mundo.getInstance().getPolignoSelecionado().exibeVertices();
+				break;
+			case KeyEvent.VK_M:
+				Mundo.getInstance().getPolignoSelecionado().exibeMatriz();
+				break;
 
+			case KeyEvent.VK_R:
+				Mundo.getInstance().getPolignoSelecionado().atribuirIdentidade();
+				break;
+
+			case KeyEvent.VK_RIGHT:
+				Mundo.getInstance().getPolignoSelecionado().translacaoXYZ(2.0,0.0,0.0);
+				break;
+			case KeyEvent.VK_LEFT:
+				Mundo.getInstance().getPolignoSelecionado().translacaoXYZ(-2.0,0.0,0.0);
+				break;
+			case KeyEvent.VK_UP:
+				Mundo.getInstance().getPolignoSelecionado().translacaoXYZ(0.0,2.0,0.0);
+				break;
+			case KeyEvent.VK_DOWN:
+				Mundo.getInstance().getPolignoSelecionado().translacaoXYZ(0.0,-2.0,0.0);
+				break;
+
+			case KeyEvent.VK_PAGE_UP:
+				Mundo.getInstance().getPolignoSelecionado().escalaXYZ(2.0,2.0);
+				break;
+			case KeyEvent.VK_PAGE_DOWN:
+				Mundo.getInstance().getPolignoSelecionado().escalaXYZ(0.5,0.5);
+				break;
+
+			case KeyEvent.VK_F1:
+				Mundo.getInstance().getPolignoSelecionado().escalaXYZPtoFixo(0.5, new Point4D(-15.0,-15.0,0.0,0.0));
+				break;
+				
+			case KeyEvent.VK_F2:
+				Mundo.getInstance().getPolignoSelecionado().escalaXYZPtoFixo(2.0, new Point4D(-15.0,-15.0,0.0,0.0));
+				break;
+				
+			case KeyEvent.VK_F3:
+				Mundo.getInstance().getPolignoSelecionado().rotacaoZPtoFixo(10.0, new Point4D(-15.0,-15.0,0.0,0.0));
+				break;
+		}
+	}
+	
 	//MATRIZ
 	public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
 	    gl.glMatrixMode(GL.GL_PROJECTION);
@@ -197,13 +183,11 @@ private boolean alterarCor=false;
 
 	public void keyTyped(KeyEvent arg0) {}
 	
-	public void mouseEntered(MouseEvent e) {
-	}
+	public void mouseEntered(MouseEvent e) {}
 	  
 	public void mouseExited(MouseEvent e) {}
 
-	public void mousePressed(MouseEvent e) {
-	}
+	public void mousePressed(MouseEvent e) {}
 	    
 	public void mouseReleased(MouseEvent e) {}
 	    
@@ -212,7 +196,7 @@ private boolean alterarCor=false;
 		
 		//Botão direito
 		if(e.getButton() == 3){
-			this.modo = 1;
+			Mundo.getInstance().modo = 1;
 			glDrawable.display();
 			return ;
 		}
@@ -220,44 +204,57 @@ private boolean alterarCor=false;
 		//Chegou, botão esquerdo
 		Point4D novoPonto = new Point4D(e.getX(),  e.getY(), 0, 1);
 		
-		if(this.modo == 1){
+		if(Mundo.getInstance().modo == 1){
 			
 			//Cria uma bbox e adiciona na lista
 			ObjetoGrafico poligono = new ObjetoGrafico();
 			poligono.criabBox(novoPonto);
-			this.listaPoligonos.add(poligono);
+			
+			
+			if((!Mundo.getInstance().isListaVazia()) && (!Mundo.getInstance().inserirRaiz)){
+				Mundo.getInstance().addObjGraficoFilho(poligono);
+			} else {
+				Mundo.getInstance().addObjGrafico(poligono);
+			}
+			/*
+			//Se for inserir raiz reseta os selecionados e seta o novo como selecionado
+			if(this.inserirRaiz){
+				this.atualizaSelecionado();
+				this.arrSelecionado[0] = this.listaPoligonos.size()-1;
+			} else {
+				
+			}*/
+			
 		}
-		
+		//Arrumar para ver qual o oligono sendo editado (pai ou filho) e editar o mesmo e não sempre o pai
 		//Atualiza bbox e a lista de pontos
-		this.listaPoligonos.get(this.listaPoligonos.size()-1).atualizabBox(novoPonto);
-		this.listaPoligonos.get(this.listaPoligonos.size()-1).addPonto(novoPonto);	
+		Mundo.getInstance().atualizabBox(novoPonto);
+		Mundo.getInstance().addPonto(novoPonto);	
 		
-		this.modo = 2;
+		Mundo.getInstance().modo = 2;
 		
 		glDrawable.display();
 	}
 	    
-	public void mouseDragged(MouseEvent e) {
-
-	}
+	public void mouseDragged(MouseEvent e) {}
 	    
 	//Quando o mouse é motivo atualiza o x do rastro
 	//sempre atualiza para zero, caso esta em edição usa a posição do mouse
 	public void mouseMoved(MouseEvent e) {
 
-		if((this.listaPoligonos == null) || (this.listaPoligonos.size() == 0)){
+		if(Mundo.getInstance().isListaVazia()){
 			return ;
 		}
 		
 		int xRastro = 0;
 		int yRastro = 0;
-		if(this.modo == 2){
+		if(Mundo.getInstance().modo == 2){
 			xRastro = e.getX();
 			yRastro = e.getY();
 		}
 		
-		this.listaPoligonos.get(this.listaPoligonos.size()-1).setxRastro(xRastro);
-		this.listaPoligonos.get(this.listaPoligonos.size()-1).setyRastro(yRastro);
+		Mundo.getInstance().setxRastro(xRastro);
+		Mundo.getInstance().setyRastro(yRastro);
 		
 		glDrawable.display();
 	}
