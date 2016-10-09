@@ -13,12 +13,8 @@ import Padrao.Point4D;
 public class Mundo {
 	private static Mundo instance;
 	private Camera camera;
-	private ObjetoGrafico poligonoSelecionado;
-	public List<ObjetoGrafico> listaPoligonos;
 	public boolean alterarCor=false;
-	
-	//Para acessar o selecionado, 1 -nivel do pai, 2 -filho ....
-	private int[] arrSelecionado;
+	public ObjetoGrafico nodoPrincipal;
 	
 	//Modos 1 - Inserir, 2 = Editar
 	public Integer modo = 1;
@@ -34,46 +30,52 @@ public class Mundo {
 	
 	private Mundo() {
 		this.camera = new Camera();
-		this.poligonoSelecionado = null;
-		this.listaPoligonos = new ArrayList<ObjetoGrafico>();
-		this.arrSelecionado = new int[10];
+		this.nodoPrincipal = null;
 	}
 	
 	//Desenha os elementos em tela
 	public void desenhaTela(GL gl){
-		if(!this.listaPoligonos.isEmpty()){
-			this.getPolignoPaiSelecionado().mostrabBox(gl);
+		if(!this.isListaVazia()){
+			//Mostra a bbox do poligono selecionado
+			this.getPolignoSelecionado().mostrabBox(gl);
 			
-			//Desenha Pontos
-			for (int i = 0; i < this.listaPoligonos.size(); i++) {
-				this.listaPoligonos.get(i).atribuirGL(gl);
-				this.listaPoligonos.get(i).desenha(this.modo);
-			}
+			//Desenha ponto do nodo principal
+			this.nodoPrincipal.atribuirGL(gl);
+			this.nodoPrincipal.desenha(this.modo);
+			
+			//Desenha Pontos dos demais
+			this.desenhaTelaRecursivo(gl,this.nodoPrincipal);
 		}
 	}
-
-	public List<ObjetoGrafico> getListaObjGrafico() {
-		return listaPoligonos;
-	}
-
-	public void addObjGrafico(ObjetoGrafico objGrafico) {
-		this.listaPoligonos.add(objGrafico);
+	
+	public void desenhaTelaRecursivo(GL gl,ObjetoGrafico objGrafico ){
+		//Primeiro percorre os irmãos
+		for (ObjetoGrafico objeto : objGrafico.getListaIrmaos()) {
+			objeto.atribuirGL(gl);
+			objeto.desenha(this.modo);
+			
+			this.desenhaTelaRecursivo(gl, objeto);
+		}
+		
+		//Depois percorre os filhos
+		for (ObjetoGrafico objeto : objGrafico.getFilhos()) {
+			objGrafico.atribuirGL(gl);
+			objGrafico.desenha(this.modo);
+			
+			this.desenhaTelaRecursivo(gl, objGrafico);
+		}
 	}
 	
 	public void addObjGraficoFilho(ObjetoGrafico objGrafico) {
 		this.getPolignoSelecionado().getFilhos().add(objGrafico);
 	}
 	
+	public void addObjGraficoIrmao(ObjetoGrafico objGrafico) {
+		this.getPolignoSelecionado().getListaIrmaos().add(objGrafico);
+	}
+	
 	public boolean isListaVazia(){
-		return (this.getListaObjGrafico().size() == 0);
-	}
-
-	public ObjetoGrafico getPoligonoSelecionado() {
-		return poligonoSelecionado;
-	}
-
-	public void setPoligonoSelecionado(ObjetoGrafico poligonoSelecionado) {
-		this.poligonoSelecionado = poligonoSelecionado;
+		return (this.nodoPrincipal == null);
 	}
 	
 	public void addPonto(Point4D ponto) {
@@ -104,33 +106,38 @@ public class Mundo {
 	
 	public void setCor(float[] cor){
 		if (this.alterarCor)
-			getPolignoPaiSelecionado().setCor(cor);
+			this.getPolignoSelecionado().setCor(cor);
 		alterarCor = false;
 	}
 	
 	//Retorna o poligono pai selecionado para desenhar bbox
-	private ObjetoGrafico getPolignoPaiSelecionado(){
-		for (ObjetoGrafico objetoGrafico : listaPoligonos) {
+	/*private ObjetoGrafico getPolignoPaiSelecionado(){
+		for (ObjetoGrafico objetoGrafico : this.nodoPrincipal.getListaIrmaos()) {
 			if(objetoGrafico.isSelecionado())
 				return objetoGrafico;
 		}
-		return listaPoligonos.get(listaPoligonos.size()-1); // nao encontrou um selecionado entao retorna o ultimo;
-	}
+		return this.nodoPrincipal.getListaIrmaos().get(this.nodoPrincipal.getListaIrmaos().size()-1); // nao encontrou um selecionado entao retorna o ultimo;
+	}*/
 	
 	//Retorna o poligono selecionado
 	public ObjetoGrafico getPolignoSelecionado(){
 		ObjetoGrafico retorno = null;
-		for (ObjetoGrafico objeto : this.listaPoligonos) {
-			if(objeto.isSelecionado()){
-				return objeto;
-			}
-			
-			retorno = this.getPoligonoSelecionadoRecursivo(objeto);
+		
+		if(this.isListaVazia()){
+			return null;
 		}
+		
+		retorno = this.getPoligonoSelecionadoRecursivo(this.nodoPrincipal);
+
 		
 		// nao encontrou um selecionado entao retorna o ultimo;
 		if(retorno == null){
-			retorno =  listaPoligonos.get(listaPoligonos.size()-1);
+			
+			if(this.nodoPrincipal.getListaIrmaos().isEmpty()){
+				return this.nodoPrincipal;
+			}
+			
+			retorno =  this.nodoPrincipal.getListaIrmaos().get(this.nodoPrincipal.getListaIrmaos().size()-1);
 		}
 		
 		return retorno;
@@ -138,6 +145,17 @@ public class Mundo {
 	
 	//Verifica os filhos dos objetos recursivamente para achar o selecionado
 	public ObjetoGrafico getPoligonoSelecionadoRecursivo(ObjetoGrafico objetoGrafico){
+		
+		//Primeiro percorre os irmãos
+		for (ObjetoGrafico objeto : objetoGrafico.getListaIrmaos()) {
+			if(objeto.isSelecionado()){
+				return objeto;
+			}
+			
+			return this.getPoligonoSelecionadoRecursivo(objeto);
+		}
+		
+		//Depois percorre os filhos
 		for (ObjetoGrafico objeto : objetoGrafico.getFilhos()) {
 			if(objeto.isSelecionado()){
 				return objeto;
@@ -147,33 +165,40 @@ public class Mundo {
 		return null;
 	}
 	
-	//zera a lista de selecionados
-	private void atualizaSelecionado(){
-		this.arrSelecionado = new int[10];
-	
-		for (ObjetoGrafico objeto : this.listaPoligonos) {
-			objeto.setSelecionado(false);
-			this.atualizaPoligonoSelecionado(objeto);
+	//Atualiza os filhos recursivamente como não selecionados
+	private void atualizaPoligonoSelecionado(){
+
+		//Vazio nenhum selecionado
+		if(this.isListaVazia()){
+			return ;
 		}
+		
+		this.atualizaPoligonoSelecionadoRecursivo(this.nodoPrincipal);
 	}
 	
 	//Atualiza os filhos recursivamente como não selecionados
-	private void atualizaPoligonoSelecionado(ObjetoGrafico objeto){
+	private void atualizaPoligonoSelecionadoRecursivo(ObjetoGrafico ObjetoGrafico){
 		
-		for (ObjetoGrafico objetoFilho : objeto.getFilhos()) {
-			objetoFilho.setSelecionado(false);
-			this.atualizaPoligonoSelecionado(objetoFilho);
+		for (ObjetoGrafico objeto : ObjetoGrafico.getListaIrmaos()) {
+			if(objeto.isSelecionado()){
+				objeto.setSelecionado(false);
+				return ;
+			}
+			
+			this.atualizaPoligonoSelecionadoRecursivo(objeto);
+		}
+		
+		for (ObjetoGrafico objetoFilho : ObjetoGrafico.getFilhos()) {
+			
+			if(objetoFilho.isSelecionado()){
+				objetoFilho.setSelecionado(false);
+				return ;
+			}
+
+			this.atualizaPoligonoSelecionadoRecursivo(objetoFilho);
 		}
 	}
 
-	private void adicionaSelecionado(int posicao){
-		for (int i = 0; i < this.arrSelecionado.length; i++) {
-			//if(this.arrSelecionado[i] == null){
-				
-			//}
-		}
-	}
-	
 	public void setxRastro(double xRastro) {
 		this.getPolignoSelecionado().setxRastro(xRastro);
 	}
@@ -190,30 +215,39 @@ public class Mundo {
 		
 		if(this.modo == 1){
 			
+			//Zera os selecionados
+			this.atualizaPoligonoSelecionado();
+			
 			//Cria uma bbox e adiciona na lista
 			ObjetoGrafico poligono = new ObjetoGrafico();
 			poligono.criabBox(novoPonto);
 			
+			//Seta o novo como selecionado
+			poligono.setSelecionado(true);
 			
-			if((!this.isListaVazia()) && (!this.inserirRaiz)){
-				this.addObjGraficoFilho(poligono);
-			} else {
-				this.addObjGrafico(poligono);
-			}
-			/*
-			//Se for inserir raiz reseta os selecionados e seta o novo como selecionado
-			if(this.inserirRaiz){
-				this.atualizaSelecionado();
-				this.arrSelecionado[0] = this.listaPoligonos.size()-1;
-			} else {
+			//Se a lista não tiver vazia
+			if(!this.isListaVazia()){
 				
-			}*/
-			
+				if(this.inserirRaiz){
+					
+					//Se tiver no modo de raiz insere um irmão
+					this.addObjGraficoIrmao(poligono);
+				} else {
+					
+					//Se não, insere um novo filho
+					this.addObjGraficoFilho(poligono);
+				}
+				
+				
+			} else {
+				//Primeiro poligno
+				this.nodoPrincipal = poligono;
+			}
 		}
-		//Arrumar para ver qual o oligono sendo editado (pai ou filho) e editar o mesmo e não sempre o pai
+
 		//Atualiza bbox e a lista de pontos
-		this.atualizabBox(novoPonto);
-		this.addPonto(novoPonto);	
+		this.getPolignoSelecionado().atualizabBox(novoPonto);
+		this.getPolignoSelecionado().addPonto(novoPonto);	
 		
 		this.modo = 2;
 	}

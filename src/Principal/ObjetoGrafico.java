@@ -20,6 +20,7 @@ public class ObjetoGrafico {
 	private boolean selecionado;
 	private int primitiva;
 	private List<ObjetoGrafico> filhos;
+	private List<ObjetoGrafico> listaIrmaos;
 	private Transformacao4D matrizObjeto = new Transformacao4D();
 	private static Transformacao4D matrizTmpTranslacao = new Transformacao4D();
 	private static Transformacao4D matrizTmpTranslacaoInversa = new Transformacao4D();
@@ -43,6 +44,7 @@ public class ObjetoGrafico {
 		this.xRastro = 0;
 		this.yRastro = 0;
 		this.setFilhos(new ArrayList<ObjetoGrafico>());
+		this.setListaIrmaos(new ArrayList<ObjetoGrafico>());
 	}
 	
 	public void atribuirGL(GL gl) {
@@ -99,18 +101,6 @@ public class ObjetoGrafico {
 		this.gl.glLineWidth(tamanho);
 		this.gl.glPointSize(tamanho);
 
-	/*	gl.glPushMatrix();
-			gl.glMultMatrixd(matrizObjeto.GetDate(), 0);
-			gl.glBegin(primitiva);
-				for (byte i=0; i < vertices.length; i++) {
-					gl.glVertex2d(vertices[i].obterX(), vertices[i].obterY());
-				}
-			gl.glEnd();
-
-			//////////// ATENCAO: chamar desenho dos filhos... 
-//desenha os filhos (chama o metodo desenha dnv), 
-		gl.glPopMatrix(); */
-		
 		this.gl.glPushMatrix();
 		this.gl.glMultMatrixd(matrizObjeto.GetDate(), 0);
 		this.gl.glBegin(this.getPrimitiva());
@@ -254,5 +244,17 @@ public class ObjetoGrafico {
 
 	public void setFilhos(List<ObjetoGrafico> filhos) {
 		this.filhos = filhos;
+	}
+
+	public List<ObjetoGrafico> getListaIrmaos() {
+		return listaIrmaos;
+	}
+
+	public void setListaIrmaos(List<ObjetoGrafico> listaIrmaos) {
+		this.listaIrmaos = listaIrmaos;
+	}
+	
+	public void addIrmao(ObjetoGrafico irmao) {
+		this.listaIrmaos.add(irmao);
 	}
 }
