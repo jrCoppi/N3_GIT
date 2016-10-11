@@ -15,6 +15,7 @@ public class Mundo {
 	private Camera camera;
 	public boolean alterarCor=false;
 	public ObjetoGrafico nodoPrincipal;
+	private boolean passouDoPrimeiroNivel = false;
 	
 	//Modos 1 - Inserir, 2 = Editar
 	public Integer modo = 1;
@@ -37,7 +38,7 @@ public class Mundo {
 	public void desenhaTela(GL gl){
 		if(!this.isListaVazia()){
 			//Mostra a bbox do poligono selecionado
-			this.getPolignoSelecionado().mostrabBox(gl);
+			this.getPolignoSelecionado(false).mostrabBox(gl);
 			
 			//Desenha ponto do nodo principal
 			this.nodoPrincipal.atribuirGL(gl);
@@ -59,19 +60,28 @@ public class Mundo {
 		
 		//Depois percorre os filhos
 		for (ObjetoGrafico objeto : objGrafico.getFilhos()) {
-			objGrafico.atribuirGL(gl);
-			objGrafico.desenha(this.modo);
+			objeto.atribuirGL(gl);
+			objeto.desenha(this.modo);
 			
-			this.desenhaTelaRecursivo(gl, objGrafico);
+			this.desenhaTelaRecursivo(gl, objeto);
 		}
 	}
 	
 	public void addObjGraficoFilho(ObjetoGrafico objGrafico) {
-		this.getPolignoSelecionado().getFilhos().add(objGrafico);
+		this.passouDoPrimeiroNivel = true;
+		this.getPolignoSelecionado(false).getFilhos().add(objGrafico);
 	}
 	
 	public void addObjGraficoIrmao(ObjetoGrafico objGrafico) {
-		this.getPolignoSelecionado().getListaIrmaos().add(objGrafico);
+		
+		//Se tiver adicionando irmão na raiz apenas (não saiu do primeiro nivel) sempre vai estar no msm nivel do inicial
+		if(this.passouDoPrimeiroNivel == false){
+			this.nodoPrincipal.getListaIrmaos().add(objGrafico);	
+			return ;
+		}
+		
+		//Se não vai adicionar um nivel acima do filho na lista de filhos
+		this.getPolignoSelecionado(true).getFilhos().add(objGrafico);		
 	}
 	
 	public boolean isListaVazia(){
@@ -79,11 +89,11 @@ public class Mundo {
 	}
 	
 	public void addPonto(Point4D ponto) {
-		this.getPolignoSelecionado().addPonto(ponto);
+		this.getPolignoSelecionado(false).addPonto(ponto);
 	}
 	
 	public void atualizabBox(Point4D ponto){
-		this.getPolignoSelecionado().atualizabBox(ponto);
+		this.getPolignoSelecionado(false).atualizabBox(ponto);
 	}
 	
 	public void removerPoligono(){
@@ -91,22 +101,22 @@ public class Mundo {
 	}
 	
 	public void removePonto(){
-		if(this.getPolignoSelecionado().getListaPontos().size() <= 2){
+		if(this.getPolignoSelecionado(false).getListaPontos().size() <= 2){
 			return ;
 		}
-		this.getPolignoSelecionado().removePonto();
+		this.getPolignoSelecionado(false).removePonto();
 	}
 	
 	public void trocaPrimitiva(){
 		if(this.isListaVazia()){
 			return ;
 		}
-		this.getPolignoSelecionado().trocaPrimitiva();
+		this.getPolignoSelecionado(false).trocaPrimitiva();
 	}
 	
 	public void setCor(float[] cor){
 		if (this.alterarCor)
-			this.getPolignoSelecionado().setCor(cor);
+			this.getPolignoSelecionado(false).setCor(cor);
 		alterarCor = false;
 	}
 	
@@ -120,14 +130,14 @@ public class Mundo {
 	}*/
 	
 	//Retorna o poligono selecionado
-	public ObjetoGrafico getPolignoSelecionado(){
+	public ObjetoGrafico getPolignoSelecionado(boolean retornaPai){
 		ObjetoGrafico retorno = null;
 		
 		if(this.isListaVazia()){
 			return null;
 		}
 		
-		retorno = this.getPoligonoSelecionadoRecursivo(this.nodoPrincipal);
+		retorno = this.getPoligonoSelecionadoRecursivo(this.nodoPrincipal,retornaPai);
 
 		
 		// nao encontrou um selecionado entao retorna o ultimo;
@@ -144,23 +154,45 @@ public class Mundo {
 	}
 	
 	//Verifica os filhos dos objetos recursivamente para achar o selecionado
-	public ObjetoGrafico getPoligonoSelecionadoRecursivo(ObjetoGrafico objetoGrafico){
+	public ObjetoGrafico getPoligonoSelecionadoRecursivo(ObjetoGrafico objetoGrafico,boolean retornaPai){
+		ObjetoGrafico retorno;
 		
 		//Primeiro percorre os irmãos
 		for (ObjetoGrafico objeto : objetoGrafico.getListaIrmaos()) {
 			if(objeto.isSelecionado()){
-				return objeto;
+				retorno = objeto;
+				
+				//Se for pra retornar o pai
+				if(retornaPai){
+					retorno = objetoGrafico;
+				}
+				return retorno;
 			}
 			
-			return this.getPoligonoSelecionadoRecursivo(objeto);
+			//Tenta percorrer o irmão, caso não ache continua pro prox irmao
+			retorno = this.getPoligonoSelecionadoRecursivo(objeto,retornaPai);
+			if(retorno != null){
+				return retorno;
+			}
 		}
 		
 		//Depois percorre os filhos
 		for (ObjetoGrafico objeto : objetoGrafico.getFilhos()) {
 			if(objeto.isSelecionado()){
-				return objeto;
+				retorno = objeto;
+				
+				//Se for pra retornar o pai
+				if(retornaPai){
+					retorno = objetoGrafico;
+				}
+				return retorno;
 			}
-			return this.getPoligonoSelecionadoRecursivo(objeto);
+			
+			//Tenta percorrer o filho, caso não ache continua pro prox filho
+			retorno = this.getPoligonoSelecionadoRecursivo(objeto,retornaPai);
+			if(retorno != null){
+				return retorno;
+			}
 		}
 		return null;
 	}
@@ -200,11 +232,11 @@ public class Mundo {
 	}
 
 	public void setxRastro(double xRastro) {
-		this.getPolignoSelecionado().setxRastro(xRastro);
+		this.getPolignoSelecionado(false).setxRastro(xRastro);
 	}
 
 	public void setyRastro(double yRastro) {
-		this.getPolignoSelecionado().setyRastro(yRastro);
+		this.getPolignoSelecionado(false).setyRastro(yRastro);
 	}
 	
 	//Clicou no botçao esquerdo
@@ -215,16 +247,11 @@ public class Mundo {
 		
 		if(this.modo == 1){
 			
-			//Zera os selecionados
-			this.atualizaPoligonoSelecionado();
-			
 			//Cria uma bbox e adiciona na lista
 			ObjetoGrafico poligono = new ObjetoGrafico();
 			poligono.criabBox(novoPonto);
 			
-			//Seta o novo como selecionado
-			poligono.setSelecionado(true);
-			
+
 			//Se a lista não tiver vazia
 			if(!this.isListaVazia()){
 				
@@ -243,11 +270,18 @@ public class Mundo {
 				//Primeiro poligno
 				this.nodoPrincipal = poligono;
 			}
+			
+			
+			//Zera os selecionados
+			this.atualizaPoligonoSelecionado();
+			
+			//Seta o novo como selecionado
+			poligono.setSelecionado(true);
 		}
 
 		//Atualiza bbox e a lista de pontos
-		this.getPolignoSelecionado().atualizabBox(novoPonto);
-		this.getPolignoSelecionado().addPonto(novoPonto);	
+		this.getPolignoSelecionado(false).atualizabBox(novoPonto);
+		this.getPolignoSelecionado(false).addPonto(novoPonto);	
 		
 		this.modo = 2;
 	}
