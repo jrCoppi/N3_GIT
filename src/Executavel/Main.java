@@ -101,16 +101,20 @@ public class Main implements GLEventListener, KeyListener, MouseListener, MouseM
 				break;
 				
 			
-			//Movimentos em tela	
+			//Mostrar
 			case KeyEvent.VK_E:
 				Mundo.getInstance().getPolignoSelecionado(false).exibeVertices();
 				break;
 			case KeyEvent.VK_M:
 				Mundo.getInstance().getPolignoSelecionado(false).exibeMatriz();
 				break;
+				
+			//identidade
 			case KeyEvent.VK_R:
 				Mundo.getInstance().getPolignoSelecionado(false).atribuirIdentidade();
 				break;
+			
+			//Translação
 			case KeyEvent.VK_RIGHT:
 				Mundo.getInstance().getPolignoSelecionado(false).translacaoXYZ(2.0,0.0,0.0);
 				break;
@@ -123,23 +127,29 @@ public class Main implements GLEventListener, KeyListener, MouseListener, MouseM
 			case KeyEvent.VK_DOWN:
 				Mundo.getInstance().getPolignoSelecionado(false).translacaoXYZ(0.0,-2.0,0.0);
 				break;
+			
+			//Escala
 			case KeyEvent.VK_PAGE_UP:
 				Mundo.getInstance().getPolignoSelecionado(false).escalaXYZ(2.0,2.0);
 				break;
 			case KeyEvent.VK_PAGE_DOWN:
 				Mundo.getInstance().getPolignoSelecionado(false).escalaXYZ(0.5,0.5);
 				break;
-
-			case KeyEvent.VK_F1:
+			//Fixo
+			case KeyEvent.VK_F3:
 				Mundo.getInstance().getPolignoSelecionado(false).escalaXYZPtoFixo(0.5, new Point4D(-15.0,-15.0,0.0,0.0));
 				break;
 				
-			case KeyEvent.VK_F2:
+			case KeyEvent.VK_F4:
 				Mundo.getInstance().getPolignoSelecionado(false).escalaXYZPtoFixo(2.0, new Point4D(-15.0,-15.0,0.0,0.0));
 				break;
-				
-			case KeyEvent.VK_F3:
+
+			//Rotação
+			case KeyEvent.VK_F1:
 				Mundo.getInstance().getPolignoSelecionado(false).rotacaoZPtoFixo(10.0, new Point4D(-15.0,-15.0,0.0,0.0));
+				break;
+			case KeyEvent.VK_F2:
+				Mundo.getInstance().getPolignoSelecionado(false).rotacaoZPtoFixo(-10.0, new Point4D(-15.0,-15.0,0.0,0.0));
 				break;
 		}
 		glDrawable.display();
