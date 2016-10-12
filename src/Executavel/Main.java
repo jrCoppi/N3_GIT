@@ -23,7 +23,7 @@ public class Main implements GLEventListener, KeyListener, MouseListener, MouseM
 	private GL gl;
 	private GLU glu;
 	private GLAutoDrawable glDrawable;
-	private int antigoY = 0;
+	private int antigoX, antigoY = 0;
 	private double posicaoX = 0, posicaoY = 0;
 	
 	//Inicia opengl
@@ -44,9 +44,9 @@ public class Main implements GLEventListener, KeyListener, MouseListener, MouseM
 		gl.glLoadIdentity();
 		
 		glu.gluOrtho2D(0, 400, 400, 0);
-		SRU();		
+		SRU();
 		
-		 //Desenha a tela no mundo
+		//Desenha a tela no mundo
 		Mundo.getInstance().desenhaTela(gl);
 		
 		gl.glFlush();
@@ -62,9 +62,6 @@ public class Main implements GLEventListener, KeyListener, MouseListener, MouseM
 				break;
 			case KeyEvent.VK_V: 
 				Mundo.getInstance().removePonto();
-				break;
-			case KeyEvent.VK_DELETE: 
-				Mundo.getInstance().removePoligno();
 				break;
 			case KeyEvent.VK_C:
 				if (!Mundo.getInstance().alterarCor)
@@ -104,53 +101,55 @@ public class Main implements GLEventListener, KeyListener, MouseListener, MouseM
 				break;
 				
 			
-			//Movimentos em tela	
+			//Mostrar
 			case KeyEvent.VK_E:
-				Mundo.getInstance().getPolignoSelecionado().exibeVertices();
+				Mundo.getInstance().getPolignoSelecionado(false).exibeVertices();
 				break;
 			case KeyEvent.VK_M:
-				Mundo.getInstance().getPolignoSelecionado().exibeMatriz();
+				Mundo.getInstance().getPolignoSelecionado(false).exibeMatriz();
 				break;
+				
+			//identidade
 			case KeyEvent.VK_R:
-				Mundo.getInstance().getPolignoSelecionado().atribuirIdentidade();
+				Mundo.getInstance().getPolignoSelecionado(false).atribuirIdentidade();
 				break;
+			
+			//Translação
 			case KeyEvent.VK_RIGHT:
-				Mundo.getInstance().getPolignoSelecionado().translacaoXYZ(2.0,0.0,0.0);
+				Mundo.getInstance().getPolignoSelecionado(false).translacaoXYZ(2.0,0.0,0.0);
 				break;
 			case KeyEvent.VK_LEFT:
-				Mundo.getInstance().getPolignoSelecionado().translacaoXYZ(-2.0,0.0,0.0);
+				Mundo.getInstance().getPolignoSelecionado(false).translacaoXYZ(-2.0,0.0,0.0);
 				break;
 			case KeyEvent.VK_UP:
-				Mundo.getInstance().getPolignoSelecionado().translacaoXYZ(0.0,2.0,0.0);
+				Mundo.getInstance().getPolignoSelecionado(false).translacaoXYZ(0.0,2.0,0.0);
 				break;
 			case KeyEvent.VK_DOWN:
-				Mundo.getInstance().getPolignoSelecionado().translacaoXYZ(0.0,-2.0,0.0);
+				Mundo.getInstance().getPolignoSelecionado(false).translacaoXYZ(0.0,-2.0,0.0);
 				break;
+			
+			//Escala
 			case KeyEvent.VK_PAGE_UP:
-				Mundo.getInstance().getPolignoSelecionado().escalaXYZ(2.0,2.0);
+				Mundo.getInstance().getPolignoSelecionado(false).escalaXYZ(2.0,2.0);
 				break;
 			case KeyEvent.VK_PAGE_DOWN:
-				Mundo.getInstance().getPolignoSelecionado().escalaXYZ(0.5,0.5);
+				Mundo.getInstance().getPolignoSelecionado(false).escalaXYZ(0.5,0.5);
+				break;
+			//Fixo
+			case KeyEvent.VK_F3:
+				Mundo.getInstance().getPolignoSelecionado(false).escalaXYZPtoFixo(0.5, new Point4D(-15.0,-15.0,0.0,0.0));
+				break;
+				
+			case KeyEvent.VK_F4:
+				Mundo.getInstance().getPolignoSelecionado(false).escalaXYZPtoFixo(2.0, new Point4D(-15.0,-15.0,0.0,0.0));
 				break;
 
+			//Rotação
 			case KeyEvent.VK_F1:
-				Mundo.getInstance().getPolignoSelecionado().escalaXYZPtoFixo(0.5, new Point4D(-15.0,-15.0,0.0,0.0));
+				Mundo.getInstance().getPolignoSelecionado(false).rotacaoZPtoFixo(10.0, new Point4D(-15.0,-15.0,0.0,0.0));
 				break;
-				
 			case KeyEvent.VK_F2:
-				Mundo.getInstance().getPolignoSelecionado().escalaXYZPtoFixo(2.0, new Point4D(-15.0,-15.0,0.0,0.0));
-				break;
-				
-			case KeyEvent.VK_F3:
-				Mundo.getInstance().getPolignoSelecionado().rotacaoZPtoFixo(10.0, new Point4D(-15.0,-15.0,0.0,0.0));
-				break;
-			case KeyEvent.VK_F4:
-				 if(Mundo.getInstance().modoSelecao){
-					Mundo.getInstance().modoSelecao = false;
-					Mundo.getInstance().objSelecionadoMomento = null;
-				 }
-				 else
-					 Mundo.getInstance().modoSelecao = true;
+				Mundo.getInstance().getPolignoSelecionado(false).rotacaoZPtoFixo(-10.0, new Point4D(-15.0,-15.0,0.0,0.0));
 				break;
 		}
 		glDrawable.display();
@@ -187,9 +186,9 @@ public class Main implements GLEventListener, KeyListener, MouseListener, MouseM
 			Mundo.getInstance().modo = 1;
 			glDrawable.display();
 			return ;
-		}		
-		else
-			Mundo.getInstance().mouseClique(e.getX(), e.getY(),gl);
+		}
+		
+		Mundo.getInstance().mouseClique(e.getX(), e.getY());
 		
 		glDrawable.display();
 	}
