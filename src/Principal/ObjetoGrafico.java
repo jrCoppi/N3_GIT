@@ -59,7 +59,20 @@ public class ObjetoGrafico {
 		return listaPontos;
 	}
 
-
+	
+	public boolean cliqueEstaNaBBox(int x,int  y) {
+		
+		if ((bBox.obterMaiorX() > x && bBox.obterMenorX() < x) && (bBox.obterMaiorY() > y && bBox.obterMenorY() < y))
+			return true;
+		
+		return false;
+	}
+	
+	public void removeUltimoPonto(){
+		//remove os 2
+		this.listaPontos.remove(this.listaPontos.size()-1);
+	}
+	
 	//Sempre que adicionar um ponto substitui o ultimo da lista e adiciona uma copia
 	public void addPonto(Point4D ponto) {
 
@@ -169,7 +182,7 @@ public class ObjetoGrafico {
 		this.escalaFixaFilho(escala, ptoFixo, this);
 	}
 	
-	private void escalaFixaFilho(double escala, Point4D ptoFixo, ObjetoGrafico objetoPai){
+	public void escalaFixaFilho(double escala, Point4D ptoFixo, ObjetoGrafico objetoPai){
 		for (ObjetoGrafico objeto : objetoPai.getFilhos()) {
 			objeto.escalaFixaFilho(escala, ptoFixo,objeto);
 		}
@@ -193,7 +206,7 @@ public class ObjetoGrafico {
 		this.rotacaoFilho(angulo, ptoFixo, this);
 	}
 
-	private void rotacaoFilho(double angulo, Point4D ptoFixo, ObjetoGrafico objetoPai){
+	public void rotacaoFilho(double angulo, Point4D ptoFixo, ObjetoGrafico objetoPai){
 		for (ObjetoGrafico objeto : objetoPai.getFilhos()) {
 			objeto.rotacaoFilho(angulo, ptoFixo,objeto);
 		}

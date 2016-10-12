@@ -63,6 +63,9 @@ public class Main implements GLEventListener, KeyListener, MouseListener, MouseM
 			case KeyEvent.VK_V: 
 				Mundo.getInstance().removePonto();
 				break;
+			case KeyEvent.VK_DELETE: 
+				Mundo.getInstance().removerPoligono();
+				break;
 			case KeyEvent.VK_C:
 				if (!Mundo.getInstance().alterarCor)
 					Mundo.getInstance().alterarCor = true;
@@ -140,7 +143,7 @@ public class Main implements GLEventListener, KeyListener, MouseListener, MouseM
 				Mundo.getInstance().getPolignoSelecionado(false).escalaXYZPtoFixo(0.5, new Point4D(-15.0,-15.0,0.0,0.0));
 				break;
 				
-			case KeyEvent.VK_F4:
+			case KeyEvent.VK_F5:
 				Mundo.getInstance().getPolignoSelecionado(false).escalaXYZPtoFixo(2.0, new Point4D(-15.0,-15.0,0.0,0.0));
 				break;
 
@@ -150,6 +153,15 @@ public class Main implements GLEventListener, KeyListener, MouseListener, MouseM
 				break;
 			case KeyEvent.VK_F2:
 				Mundo.getInstance().getPolignoSelecionado(false).rotacaoZPtoFixo(-10.0, new Point4D(-15.0,-15.0,0.0,0.0));
+				break;
+				
+			case KeyEvent.VK_F4:
+				 if(Mundo.getInstance().modoSelecao){
+					Mundo.getInstance().modoSelecao = false;
+					Mundo.getInstance().objSelecionadoMomento = null;
+				 }
+				 else
+					 Mundo.getInstance().modoSelecao = true;
 				break;
 		}
 		glDrawable.display();
@@ -188,7 +200,7 @@ public class Main implements GLEventListener, KeyListener, MouseListener, MouseM
 			return ;
 		}
 		
-		Mundo.getInstance().mouseClique(e.getX(), e.getY());
+		Mundo.getInstance().mouseClique(e.getX(), e.getY(),gl);
 		
 		glDrawable.display();
 	}
