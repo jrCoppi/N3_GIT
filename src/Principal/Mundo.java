@@ -1,5 +1,7 @@
 package Principal;
+import java.awt.Point;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.media.opengl.GL;
@@ -15,10 +17,11 @@ public class Mundo {
 	private Camera camera;
 	public boolean alterarCor=false;
 	public ObjetoGrafico nodoPrincipal;
-	private boolean passouDoPrimeiroNivel = false;
+	public ObjetoGrafico objSelecionadoMomento;
 	
-	//Modos 1 - Inserir, 2 = Editar
-	public Integer modo = 1;
+	//Modos 1 - Inserir, 2 = Editar, 
+	public int modo = 1;
+	public boolean modoSelecao;
 	
 	public Boolean inserirRaiz = true;
 	
@@ -38,7 +41,10 @@ public class Mundo {
 	public void desenhaTela(GL gl){
 		if(!this.isListaVazia()){
 			//Mostra a bbox do poligono selecionado
-			this.getPolignoSelecionado(false).mostrabBox(gl);
+			if(!modoSelecao)
+			this.getPolignoSelecionado().mostrabBox(gl);
+			if(objSelecionadoMomento !=null)
+			this.objSelecionadoMomento.mostrabBox(gl);
 			
 			//Desenha ponto do nodo principal
 			this.nodoPrincipal.atribuirGL(gl);
@@ -60,28 +66,19 @@ public class Mundo {
 		
 		//Depois percorre os filhos
 		for (ObjetoGrafico objeto : objGrafico.getFilhos()) {
-			objeto.atribuirGL(gl);
-			objeto.desenha(this.modo);
+			objGrafico.atribuirGL(gl);
+			objGrafico.desenha(this.modo);
 			
-			this.desenhaTelaRecursivo(gl, objeto);
+			this.desenhaTelaRecursivo(gl, objGrafico);
 		}
 	}
 	
 	public void addObjGraficoFilho(ObjetoGrafico objGrafico) {
-		this.passouDoPrimeiroNivel = true;
-		this.getPolignoSelecionado(false).getFilhos().add(objGrafico);
+		this.getPolignoSelecionado().getFilhos().add(objGrafico);
 	}
 	
 	public void addObjGraficoIrmao(ObjetoGrafico objGrafico) {
-		
-		//Se tiver adicionando irmão na raiz apenas (não saiu do primeiro nivel) sempre vai estar no msm nivel do inicial
-		if(this.passouDoPrimeiroNivel == false){
-			this.nodoPrincipal.getListaIrmaos().add(objGrafico);	
-			return ;
-		}
-		
-		//Se não vai adicionar um nivel acima do filho na lista de filhos
-		this.getPolignoSelecionado(true).getFilhos().add(objGrafico);		
+		this.getPolignoSelecionado().getListaIrmaos().add(objGrafico);
 	}
 	
 	public boolean isListaVazia(){
@@ -89,11 +86,11 @@ public class Mundo {
 	}
 	
 	public void addPonto(Point4D ponto) {
-		this.getPolignoSelecionado(false).addPonto(ponto);
+		this.getPolignoSelecionado().addPonto(ponto);
 	}
 	
 	public void atualizabBox(Point4D ponto){
-		this.getPolignoSelecionado(false).atualizabBox(ponto);
+		this.getPolignoSelecionado().atualizabBox(ponto);
 	}
 	
 	public void removerPoligono(){
@@ -101,22 +98,37 @@ public class Mundo {
 	}
 	
 	public void removePonto(){
-		if(this.getPolignoSelecionado(false).getListaPontos().size() <= 2){
+		if(this.getPolignoSelecionado().getListaPontos().size() <= 2){
 			return ;
 		}
-		this.getPolignoSelecionado(false).removePonto();
+		this.getPolignoSelecionado().removePonto();
 	}
+	
+	public void removePoligno(){
+		
+		
+		if(this.getPolignoSelecionado().getListaPontos().size() == 0)
+			return;
+		
+		for (int i =0; i <=  this.getPolignoSelecionado().getListaPontos().size(); i++) 
+		{
+			this.getPolignoSelecionado().removeUltimoPonto();
+		}
+		removePoligno();
+		
+	}
+	
 	
 	public void trocaPrimitiva(){
 		if(this.isListaVazia()){
 			return ;
 		}
-		this.getPolignoSelecionado(false).trocaPrimitiva();
+		this.getPolignoSelecionado().trocaPrimitiva();
 	}
 	
 	public void setCor(float[] cor){
 		if (this.alterarCor)
-			this.getPolignoSelecionado(false).setCor(cor);
+			this.getPolignoSelecionado().setCor(cor);
 		alterarCor = false;
 	}
 	
@@ -130,14 +142,14 @@ public class Mundo {
 	}*/
 	
 	//Retorna o poligono selecionado
-	public ObjetoGrafico getPolignoSelecionado(boolean retornaPai){
+	public ObjetoGrafico getPolignoSelecionado(){
 		ObjetoGrafico retorno = null;
 		
 		if(this.isListaVazia()){
 			return null;
 		}
 		
-		retorno = this.getPoligonoSelecionadoRecursivo(this.nodoPrincipal,retornaPai);
+		retorno = this.getPoligonoSelecionadoRecursivo(this.nodoPrincipal);
 
 		
 		// nao encontrou um selecionado entao retorna o ultimo;
@@ -154,45 +166,23 @@ public class Mundo {
 	}
 	
 	//Verifica os filhos dos objetos recursivamente para achar o selecionado
-	public ObjetoGrafico getPoligonoSelecionadoRecursivo(ObjetoGrafico objetoGrafico,boolean retornaPai){
-		ObjetoGrafico retorno;
+	public ObjetoGrafico getPoligonoSelecionadoRecursivo(ObjetoGrafico objetoGrafico){
 		
 		//Primeiro percorre os irmãos
 		for (ObjetoGrafico objeto : objetoGrafico.getListaIrmaos()) {
 			if(objeto.isSelecionado()){
-				retorno = objeto;
-				
-				//Se for pra retornar o pai
-				if(retornaPai){
-					retorno = objetoGrafico;
-				}
-				return retorno;
+				return objeto;
 			}
 			
-			//Tenta percorrer o irmão, caso não ache continua pro prox irmao
-			retorno = this.getPoligonoSelecionadoRecursivo(objeto,retornaPai);
-			if(retorno != null){
-				return retorno;
-			}
+			return this.getPoligonoSelecionadoRecursivo(objeto);
 		}
 		
 		//Depois percorre os filhos
 		for (ObjetoGrafico objeto : objetoGrafico.getFilhos()) {
 			if(objeto.isSelecionado()){
-				retorno = objeto;
-				
-				//Se for pra retornar o pai
-				if(retornaPai){
-					retorno = objetoGrafico;
-				}
-				return retorno;
+				return objeto;
 			}
-			
-			//Tenta percorrer o filho, caso não ache continua pro prox filho
-			retorno = this.getPoligonoSelecionadoRecursivo(objeto,retornaPai);
-			if(retorno != null){
-				return retorno;
-			}
+			return this.getPoligonoSelecionadoRecursivo(objeto);
 		}
 		return null;
 	}
@@ -232,26 +222,31 @@ public class Mundo {
 	}
 
 	public void setxRastro(double xRastro) {
-		this.getPolignoSelecionado(false).setxRastro(xRastro);
+		this.getPolignoSelecionado().setxRastro(xRastro);
 	}
 
 	public void setyRastro(double yRastro) {
-		this.getPolignoSelecionado(false).setyRastro(yRastro);
+		this.getPolignoSelecionado().setyRastro(yRastro);
 	}
 	
 	//Clicou no botçao esquerdo
-	public void mouseClique(int mouseX, int mouseY){
+	public void mouseClique(int mouseX, int mouseY, GL gl){
 
 		//Chegou, botão esquerdo
 		Point4D novoPonto = new Point4D(mouseX,  mouseY, 0, 1);
 		
-		if(this.modo == 1){
+		if(this.modo == 1) {
+			
+			//Zera os selecionados
+			this.atualizaPoligonoSelecionado();
 			
 			//Cria uma bbox e adiciona na lista
 			ObjetoGrafico poligono = new ObjetoGrafico();
 			poligono.criabBox(novoPonto);
 			
-
+			//Seta o novo como selecionado
+			poligono.setSelecionado(true);
+			
 			//Se a lista não tiver vazia
 			if(!this.isListaVazia()){
 				
@@ -270,20 +265,123 @@ public class Mundo {
 				//Primeiro poligno
 				this.nodoPrincipal = poligono;
 			}
-			
-			
-			//Zera os selecionados
-			this.atualizaPoligonoSelecionado();
-			
-			//Seta o novo como selecionado
-			poligono.setSelecionado(true);
 		}
+		if(modoSelecao)
+			selecionarObjetoGrafico( mouseX,  mouseY,gl);
+		
+		else{
 
 		//Atualiza bbox e a lista de pontos
-		this.getPolignoSelecionado(false).atualizabBox(novoPonto);
-		this.getPolignoSelecionado(false).addPonto(novoPonto);	
-		
+		this.getPolignoSelecionado().atualizabBox(novoPonto);
+		this.getPolignoSelecionado().addPonto(novoPonto);	
+		}
 		this.modo = 2;
+	}
+	
+	/**
+	 * Seleciona um objeto gráfico utilizando coordenadas do mouse do usuário
+	 * @param x - eixo x do mouse na tela
+	 * @param y - eixo y do mouse na tela
+	 */
+	private void selecionarObjetoGrafico(int x, int y, GL gl) {
+		objSelecionadoMomento = null;
+		if(nodoPrincipal.cliqueEstaNaBBox(x,y))
+		{
+			if(buscarInterseccaoPontos(nodoPrincipal,x,y) % 2 != 0)
+			{//impar, poligno selecionado
+				
+				nodoPrincipal.setSelecionado(true);
+				nodoPrincipal.setSelecionado(true);
+				objSelecionadoMomento = nodoPrincipal;
+				
+				return;
+			}
+			//pegar vértice mais proximo ao clique
+			
+		}
+		
+		for (ObjetoGrafico obj : this.nodoPrincipal.getListaIrmaos()) 
+		{
+			if(obj.cliqueEstaNaBBox(x,y))
+			{
+				if(buscarInterseccaoPontos(obj,x,y) % 2 != 0)
+				{
+					obj.setSelecionado(true);
+					objSelecionadoMomento = obj;
+					return;
+				}
+			//pegar vértice mais proximo ao clique
+			}
+		}
+		
+		for (ObjetoGrafico obj : this.nodoPrincipal.getFilhos()) 
+		{
+			if(obj.cliqueEstaNaBBox(x,y))
+			{
+				if(buscarInterseccaoPontos(obj,x,y) % 2 != 0)
+				{
+					obj.setSelecionado(true);
+					objSelecionadoMomento = obj;
+					return;
+				}
+			//pegar vértice mais proximo ao clique
+			}
+		}
+		
+	}
+
+	/**
+	 * Método para verificar se o clique do usuário se interseciona nas interseções do poligno
+	 * @param obj - Objeto gráfico
+	 * @param xi - X da interseção do clique
+	 * @param yi - Y da interseção do clique
+	 * @return quantidade de pariedades encontradas. Se ímpar, objeto selecionado
+	 */
+	private int buscarInterseccaoPontos(ObjetoGrafico obj, int xi, int yi) {
+		int quantidadePariedades=0;
+		for (int i = 0; i < obj.getListaPontos().size()-1; i++) 
+		{
+			
+			Point4D p1 = obj.getListaPontos().get(i);
+			Point4D p2 = obj.getListaPontos().get(i+1);
+			double ti = intersecaoY(p1.GetY(),p2.GetY(),yi);
+			if(ti>0 && ti<=1) //há interseção de y
+			{
+				if(verificarPariedadeX(p1.GetX(),p2.GetX(),xi,ti))
+					quantidadePariedades++;
+			}
+		}
+		return quantidadePariedades;
+		
+	}
+
+	/**
+	 *  verifica a quantidade de X intersecinados na reta y
+	 * @param x1 - primeiro ponto de reta do objeto gráfico
+	 * @param x2 - segundo ponto de reta do objeto gráfico
+	 * @param xi X da interseção do clique
+	 * @param ti - Linha intersecao y
+	 * @return true se existir pariedade
+	 */
+	private boolean verificarPariedadeX(double x1, double x2, int xi, double ti) {
+		
+		double x = (x1) + (x2-x1) *ti;
+		return x>xi;
+		
+	}
+
+	/**
+	 * Descobrir qual a linha que montada a partir de dois pontos de um objeto gráfico
+	 * @param y1 - primeiro ponto y de reta do objeto gráfico
+	 * @param y2 - segundo ponto y de reta do objeto gráfico
+	 * @param yi - ponto de interseção y do clique do usuário
+	 * @return o valor de TI
+	 */
+	private double intersecaoY(double y1, double y2, int yi) {
+		
+		double ti = (yi-y1) / (y2 -y1);		
+		
+		return ti;
 	}
 	
 }

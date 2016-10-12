@@ -28,6 +28,15 @@ public class ObjetoGrafico {
 	private static Transformacao4D matrizGlobal = new Transformacao4D();
 	GL gl;
 	
+	
+	public boolean cliqueEstaNaBBox(int x,int  y) {
+		
+		if ((bBox.obterMaiorX() > x && bBox.obterMenorX() < x) && (bBox.obterMaiorY() > y && bBox.obterMenorY() < y))
+			return true;
+		
+		return false;
+	}
+	
 	public boolean isSelecionado() {
 		return selecionado;
 	}
@@ -95,6 +104,10 @@ public class ObjetoGrafico {
 		this.yRastro = 0;
 	}
 	
+	public void removeUltimoPonto(){
+		//remove os 2
+		this.listaPontos.remove(this.listaPontos.size()-1);
+	}
 	public void desenha(Integer modo) {
 		float[] cor = this.getCor();
 		this.gl.glColor3f(cor[0],cor[1],cor[2]);	
@@ -122,29 +135,13 @@ public class ObjetoGrafico {
 	public void translacaoXYZ(double tx, double ty, double tz) {
 		Transformacao4D matrizTranslate = new Transformacao4D();
 		matrizTranslate.atribuirTranslacao(tx,ty,tz);
-		matrizObjeto = matrizTranslate.transformMatrix(matrizObjeto);	
-		
-		this.translacaoFilhos(tx, ty, tz, this);
-	}
-	
-	private void translacaoFilhos(double tx, double ty, double tz, ObjetoGrafico objetoPai){
-		for (ObjetoGrafico objeto : objetoPai.getFilhos()) {
-			objeto.translacaoXYZ(tx, ty, tz);
-		}
+		matrizObjeto = matrizTranslate.transformMatrix(matrizObjeto);		
 	}
 
 	public void escalaXYZ(double Sx,double Sy) {
 		Transformacao4D matrizScale = new Transformacao4D();		
 		matrizScale.atribuirEscala(Sx,Sy,1.0);
 		matrizObjeto = matrizScale.transformMatrix(matrizObjeto);
-		
-		this.escalaFilhos(Sx,Sy,this);
-	}
-	
-	private void escalaFilhos(double Sx,double Sy, ObjetoGrafico objetoPai) {
-		for (ObjetoGrafico objeto : objetoPai.getFilhos()) {
-			objeto.escalaXYZ(Sx, Sy);
-		}
 	}
 	
 	public void atribuirIdentidade() {
@@ -165,14 +162,6 @@ public class ObjetoGrafico {
 		matrizGlobal = matrizTmpTranslacaoInversa.transformMatrix(matrizGlobal);
 
 		matrizObjeto = matrizObjeto.transformMatrix(matrizGlobal);
-		
-		this.escalaFixaFilho(escala, ptoFixo, this);
-	}
-	
-	private void escalaFixaFilho(double escala, Point4D ptoFixo, ObjetoGrafico objetoPai){
-		for (ObjetoGrafico objeto : objetoPai.getFilhos()) {
-			objeto.escalaFixaFilho(escala, ptoFixo,objeto);
-		}
 	}
 	
 	public void rotacaoZPtoFixo(double angulo, Point4D ptoFixo) {
@@ -189,16 +178,8 @@ public class ObjetoGrafico {
 		matrizGlobal = matrizTmpTranslacaoInversa.transformMatrix(matrizGlobal);
 
 		matrizObjeto = matrizObjeto.transformMatrix(matrizGlobal);
-		
-		this.rotacaoFilho(angulo, ptoFixo, this);
 	}
 
-	private void rotacaoFilho(double angulo, Point4D ptoFixo, ObjetoGrafico objetoPai){
-		for (ObjetoGrafico objeto : objetoPai.getFilhos()) {
-			objeto.rotacaoFilho(angulo, ptoFixo,objeto);
-		}
-	}
-	
 	public void exibeMatriz() {
 		matrizObjeto.exibeMatriz();
 	}
