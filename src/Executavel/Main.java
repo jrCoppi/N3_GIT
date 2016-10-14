@@ -156,12 +156,15 @@ public class Main implements GLEventListener, KeyListener, MouseListener, MouseM
 				break;
 				
 			case KeyEvent.VK_F4:
+				System.out.println("F4");
 				 if(Mundo.getInstance().modoSelecao){
 					Mundo.getInstance().modoSelecao = false;
 					Mundo.getInstance().objSelecionadoMomento = null;
 				 }
-				 else
+				 else {
 					 Mundo.getInstance().modoSelecao = true;
+					 Mundo.getInstance().modo = 1;
+				 }
 				break;
 		}
 		glDrawable.display();

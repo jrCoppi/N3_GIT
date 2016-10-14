@@ -1,5 +1,6 @@
 package Principal;
 
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,6 +19,8 @@ public class Mundo {
 	public ObjetoGrafico nodoPrincipal;
 	private boolean passouDoPrimeiroNivel = false;
 	public ObjetoGrafico objSelecionadoMomento;
+	public Point4D ponto1VerticeSelecionado;
+	public Point4D ponto2VerticeSelecionado;
 
 	// Modos 1 - Inserir, 2 = Editar
 	public Integer modo = 1;
@@ -41,13 +44,26 @@ public class Mundo {
 	public void desenhaTela(GL gl) {
 		if (!this.isListaVazia()) {
 			// Mostra a bbox do poligono selecionado
-			if(!modoSelecao){
+			//if(!modoSelecao){
 				this.getPolignoSelecionado(false).mostrabBox(gl);
-			}
+			//}
 			
-			if(objSelecionadoMomento !=null){
+		/*	if(objSelecionadoMomento !=null){
 				this.objSelecionadoMomento.mostrabBox(gl);
 			}
+			else
+			{
+				if(ponto1VerticeSelecionado!=null && ponto2VerticeSelecionado!=null)
+				{ 	ObjetoGrafico obj = new ObjetoGrafico();
+					obj.atribuirGL(gl);
+					obj.addPonto(ponto1VerticeSelecionado);
+//					obj.criabBox(ponto1VerticeSelecionado);
+					objSelecionadoMomento = obj;
+					addObjGraficoIrmao(obj);
+					this.objSelecionadoMomento.criabBox(ponto1VerticeSelecionado);
+					this.objSelecionadoMomento.mostrabBox(gl);
+				}
+			} */
 				
 
 			// Desenha ponto do nodo principal
@@ -160,7 +176,7 @@ public class Mundo {
 		// nao encontrou um selecionado entao retorna o ultimo;
 		if (retorno == null) {
 
-			if (this.nodoPrincipal.getListaIrmaos().isEmpty()) {
+			if ((this.nodoPrincipal.getListaIrmaos().isEmpty()) || (this.nodoPrincipal.isSelecionado())){
 				return this.nodoPrincipal;
 			}
 
@@ -259,9 +275,14 @@ public class Mundo {
 	// Clicou no botçao esquerdo
 	public void mouseClique(int mouseX, int mouseY, GL gl) {
 
+		if(modoSelecao){
+			selecionarObjetoGrafico( mouseX,  mouseY,gl);
+			return ;
+		}
+		
 		// Chegou, botão esquerdo
 		Point4D novoPonto = new Point4D(mouseX, mouseY, 0, 1);
-
+		
 		if (this.modo == 1) {
 
 			// Cria uma bbox e adiciona na lista
@@ -293,13 +314,8 @@ public class Mundo {
 			poligono.setSelecionado(true);
 		}
 
-		if(modoSelecao){
-			selecionarObjetoGrafico( mouseX,  mouseY,gl);
-		} else{
-			// Atualiza bbox e a lista de pontos
-			this.getPolignoSelecionado(false).atualizabBox(novoPonto);
-			this.getPolignoSelecionado(false).addPonto(novoPonto);
-		}
+		this.getPolignoSelecionado(false).atualizabBox(novoPonto);
+		this.getPolignoSelecionado(false).addPonto(novoPonto);
 
 		this.modo = 2;
 	}
@@ -316,9 +332,9 @@ public class Mundo {
 			if(buscarInterseccaoPontos(nodoPrincipal,x,y) % 2 != 0)
 			{//impar, poligno selecionado
 				
+				this.atualizaPoligonoSelecionado();
 				nodoPrincipal.setSelecionado(true);
-				nodoPrincipal.setSelecionado(true);
-				objSelecionadoMomento = nodoPrincipal;
+				//objSelecionadoMomento = nodoPrincipal;
 				
 				return;
 			}
@@ -332,8 +348,9 @@ public class Mundo {
 			{
 				if(buscarInterseccaoPontos(obj,x,y) % 2 != 0)
 				{
+					this.atualizaPoligonoSelecionado();
 					obj.setSelecionado(true);
-					objSelecionadoMomento = obj;
+					//objSelecionadoMomento = obj;
 					return;
 				}
 			//pegar vértice mais proximo ao clique
@@ -346,8 +363,9 @@ public class Mundo {
 			{
 				if(buscarInterseccaoPontos(obj,x,y) % 2 != 0)
 				{
+					this.atualizaPoligonoSelecionado();
 					obj.setSelecionado(true);
-					objSelecionadoMomento = obj;
+					//objSelecionadoMomento = obj;
 					return;
 				}
 			//pegar vértice mais proximo ao clique
@@ -373,6 +391,8 @@ public class Mundo {
 			double ti = intersecaoY(p1.GetY(),p2.GetY(),yi);
 			if(ti>0 && ti<=1) //há interseção de y
 			{
+				ponto1VerticeSelecionado = p1;
+				ponto2VerticeSelecionado = p2;
 				if(verificarPariedadeX(p1.GetX(),p2.GetX(),xi,ti))
 					quantidadePariedades++;
 			}
