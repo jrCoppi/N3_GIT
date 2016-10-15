@@ -1,12 +1,7 @@
 package Principal;
 
-import java.io.ObjectOutputStream;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.media.opengl.GL;
-
-import Outros.Cor;
 import Padrao.Point4D;
 
 /**
@@ -19,8 +14,6 @@ public class Mundo {
 	public ObjetoGrafico nodoPrincipal;
 	private boolean passouDoPrimeiroNivel = false;
 	public ObjetoGrafico objSelecionadoMomento;
-	public Point4D ponto1VerticeSelecionado;
-	public Point4D ponto2VerticeSelecionado;
 
 	// Modos 1 - Inserir, 2 = Editar
 	public Integer modo = 1;
@@ -40,31 +33,15 @@ public class Mundo {
 		this.nodoPrincipal = null;
 	}
 
-	// Desenha os elementos em tela
+	
+	/**
+	 * Desenha os elementos em tela
+	 * @param gl
+	 */
 	public void desenhaTela(GL gl) {
 		if (!this.isListaVazia()) {
 			// Mostra a bbox do poligono selecionado
-			//if(!modoSelecao){
-				this.getPolignoSelecionado(false).mostrabBox(gl);
-			//}
-			
-		/*	if(objSelecionadoMomento !=null){
-				this.objSelecionadoMomento.mostrabBox(gl);
-			}
-			else
-			{
-				if(ponto1VerticeSelecionado!=null && ponto2VerticeSelecionado!=null)
-				{ 	ObjetoGrafico obj = new ObjetoGrafico();
-					obj.atribuirGL(gl);
-					obj.addPonto(ponto1VerticeSelecionado);
-//					obj.criabBox(ponto1VerticeSelecionado);
-					objSelecionadoMomento = obj;
-					addObjGraficoIrmao(obj);
-					this.objSelecionadoMomento.criabBox(ponto1VerticeSelecionado);
-					this.objSelecionadoMomento.mostrabBox(gl);
-				}
-			} */
-				
+			this.getPolignoSelecionado(false).mostrabBox(gl);
 
 			// Desenha ponto do nodo principal
 			this.nodoPrincipal.atribuirGL(gl);
@@ -75,6 +52,12 @@ public class Mundo {
 		}
 	}
 
+	
+	/**
+	 * Desenha os elementos em tela de filhos e irmãos
+	 * @param gl
+	 * @param objGrafico - objeto a ser desenhado
+	 */
 	public void desenhaTelaRecursivo(GL gl, ObjetoGrafico objGrafico) {
 		// Primeiro percorre os irmãos
 		for (ObjetoGrafico objeto : objGrafico.getListaIrmaos()) {
@@ -93,11 +76,20 @@ public class Mundo {
 		}
 	}
 
+	
+	/**
+	 * Adiciona objeto filho
+	 * @param objGrafico
+	 */
 	public void addObjGraficoFilho(ObjetoGrafico objGrafico) {
 		this.passouDoPrimeiroNivel = true;
 		this.getPolignoSelecionado(false).getFilhos().add(objGrafico);
 	}
-
+	
+	/**
+	 * Adiciona objeto irmão
+	 * @param objGrafico
+	 */
 	public void addObjGraficoIrmao(ObjetoGrafico objGrafico) {
 
 		// Se tiver adicionando irmão na raiz apenas (não saiu do primeiro
@@ -111,6 +103,9 @@ public class Mundo {
 		this.getPolignoSelecionado(true).getFilhos().add(objGrafico);
 	}
 
+	/**
+	 * Verifica se a lista esta vazia
+	 */
 	public boolean isListaVazia() {
 		return (this.nodoPrincipal == null);
 	}
@@ -123,6 +118,10 @@ public class Mundo {
 		this.getPolignoSelecionado(false).atualizabBox(ponto);
 	}
 
+	
+	/**
+	 * Remove o poligono
+	 */
 	public void removerPoligono() {
 		if(this.getPolignoSelecionado(false).getListaPontos().size() == 0)
 			return;
@@ -141,6 +140,10 @@ public class Mundo {
 		this.getPolignoSelecionado(false).removePonto();
 	}
 
+	
+	/**
+	 * Troca a primitiva utilizada
+	 */
 	public void trocaPrimitiva() {
 		if (this.isListaVazia()) {
 			return;
@@ -148,22 +151,23 @@ public class Mundo {
 		this.getPolignoSelecionado(false).trocaPrimitiva();
 	}
 
+	
+	/**
+	 * Seta uma de nossas cores criadas na classe
+	 * @param cor
+	 */
 	public void setCor(float[] cor) {
 		if (this.alterarCor)
 			this.getPolignoSelecionado(false).setCor(cor);
 		alterarCor = false;
 	}
 
-	// Retorna o poligono pai selecionado para desenhar bbox
-	/*
-	 * private ObjetoGrafico getPolignoPaiSelecionado(){ for (ObjetoGrafico
-	 * objetoGrafico : this.nodoPrincipal.getListaIrmaos()) {
-	 * if(objetoGrafico.isSelecionado()) return objetoGrafico; } return
-	 * this.nodoPrincipal.getListaIrmaos().get(this.nodoPrincipal.getListaIrmaos
-	 * ().size()-1); // nao encontrou um selecionado entao retorna o ultimo; }
+	
+	/**
+	 * Retorna o poligono selecionado atualmente
+	 * @param retornaPai - se deve retornar o poligono ou seu pai
+	 * @return
 	 */
-
-	// Retorna o poligono selecionado
 	public ObjetoGrafico getPolignoSelecionado(boolean retornaPai) {
 		ObjetoGrafico retorno = null;
 
@@ -186,7 +190,13 @@ public class Mundo {
 		return retorno;
 	}
 
-	// Verifica os filhos dos objetos recursivamente para achar o selecionado
+	
+	/**
+	 * Verifica os irmãos e filhos dos objetos recursivamente para achar o selecionado
+	 * @param objetoGrafico
+	 * @param retornaPai
+	 * @return
+	 */
 	public ObjetoGrafico getPoligonoSelecionadoRecursivo(ObjetoGrafico objetoGrafico, boolean retornaPai) {
 		ObjetoGrafico retorno;
 
@@ -230,7 +240,10 @@ public class Mundo {
 		return null;
 	}
 
-	// Atualiza os filhos recursivamente como não selecionados
+	
+	/**
+	 * Atualiza os filhos recursivamente como não selecionados
+	 */
 	public void atualizaPoligonoSelecionado() {
 
 		// Vazio nenhum selecionado
@@ -241,7 +254,11 @@ public class Mundo {
 		this.atualizaPoligonoSelecionadoRecursivo(this.nodoPrincipal);
 	}
 
-	// Atualiza os filhos recursivamente como não selecionados
+	
+	/**
+	 * Atualiza os filhos recursivamente como não selecionados
+	 * @param ObjetoGrafico
+	 */
 	public void atualizaPoligonoSelecionadoRecursivo(ObjetoGrafico ObjetoGrafico) {
 
 		for (ObjetoGrafico objeto : ObjetoGrafico.getListaIrmaos()) {
@@ -264,6 +281,11 @@ public class Mundo {
 		}
 	}
 
+	
+	/**
+	 * Grava variavel do Rastro em tela
+	 * @param xRastro
+	 */
 	public void setxRastro(double xRastro) {
 		this.getPolignoSelecionado(false).setxRastro(xRastro);
 	}
@@ -272,11 +294,16 @@ public class Mundo {
 		this.getPolignoSelecionado(false).setyRastro(yRastro);
 	}
 
-	// Clicou no botçao esquerdo
-	public void mouseClique(int mouseX, int mouseY, GL gl) {
+	
+	/**
+	 * Processa clique do usuário na tela
+	 * @param mouseX
+	 * @param mouseY
+	 */
+	public void mouseClique(int mouseX, int mouseY) {
 
 		if(modoSelecao){
-			selecionarObjetoGrafico( mouseX,  mouseY,gl);
+			selecionarObjetoGrafico( mouseX,  mouseY);
 			return ;
 		}
 		
@@ -325,7 +352,7 @@ public class Mundo {
 	 * @param x - eixo x do mouse na tela
 	 * @param y - eixo y do mouse na tela
 	 */
-	private void selecionarObjetoGrafico(int x, int y, GL gl) {
+	private void selecionarObjetoGrafico(int x, int y) {
 		objSelecionadoMomento = null;
 		if(nodoPrincipal.cliqueEstaNaBBox(x,y))
 		{
@@ -391,8 +418,6 @@ public class Mundo {
 			double ti = intersecaoY(p1.GetY(),p2.GetY(),yi);
 			if(ti>0 && ti<=1) //há interseção de y
 			{
-				ponto1VerticeSelecionado = p1;
-				ponto2VerticeSelecionado = p2;
 				if(verificarPariedadeX(p1.GetX(),p2.GetX(),xi,ti))
 					quantidadePariedades++;
 			}

@@ -14,7 +14,7 @@ public class ObjetoGrafico {
 
 	private List<Point4D> listaPontos;
 	private float tamanho = 2.0f;
-	private BoundingBox bBox; 
+	public BoundingBox bBox; 
 	private float[] cor;
 	private double xRastro,yRastro;
 	private boolean selecionado;
@@ -60,6 +60,12 @@ public class ObjetoGrafico {
 	}
 
 	
+	/**
+	 * Verifica se clicamos dentro da bbox
+	 * @param x - x mouse
+	 * @param y - y mouse
+	 * @return
+	 */
 	public boolean cliqueEstaNaBBox(int x,int  y) {
 		
 		if ((bBox.obterMaiorX() > x && bBox.obterMenorX() < x) && (bBox.obterMaiorY() > y && bBox.obterMenorY() < y))
@@ -68,12 +74,17 @@ public class ObjetoGrafico {
 		return false;
 	}
 	
+	
 	public void removeUltimoPonto(){
 		//remove os 2
 		this.listaPontos.remove(this.listaPontos.size()-1);
 	}
 	
-	//Sempre que adicionar um ponto substitui o ultimo da lista e adiciona uma copia
+	
+	/**
+	 * Sempre que adicionar um ponto substitui o ultimo da lista e adiciona uma copia
+	 * @param ponto - ponto novo
+	 */
 	public void addPonto(Point4D ponto) {
 
 		
@@ -94,7 +105,10 @@ public class ObjetoGrafico {
 		this.yRastro = 0;
 	}
 	
-	//Remove os dois ultimos pontos e duplica o anteior a eles
+	
+	/**
+	 * Remove os dois ultimos pontos e duplica o anteior a eles
+	 */
 	public void removePonto(){
 		//remove os 2
 		this.listaPontos.remove(this.listaPontos.size()-1);
@@ -108,6 +122,11 @@ public class ObjetoGrafico {
 		this.yRastro = 0;
 	}
 	
+	
+	/**
+	 * Desenha os elementos deste objeto em tela
+	 * @param modo - modo da tela
+	 */
 	public void desenha(Integer modo) {
 		float[] cor = this.getCor();
 		this.gl.glColor3f(cor[0],cor[1],cor[2]);	
@@ -127,11 +146,15 @@ public class ObjetoGrafico {
 			}
 		this.gl.glEnd();
 		
-		//Chama fihos
-		
 		this.gl.glPopMatrix();
 	}
 	
+	/**
+	 * Faz a translação em XYZ
+	 * @param tx
+	 * @param ty
+	 * @param tz
+	 */
 	public void translacaoXYZ(double tx, double ty, double tz) {
 		Transformacao4D matrizTranslate = new Transformacao4D();
 		matrizTranslate.atribuirTranslacao(tx,ty,tz);
@@ -140,12 +163,26 @@ public class ObjetoGrafico {
 		this.translacaoFilhos(tx, ty, tz, this);
 	}
 	
+	
+	/**
+	 * Faz a translação dos filhos em xyz
+	 * @param tx
+	 * @param ty
+	 * @param tz
+	 * @param objetoPai
+	 */
 	private void translacaoFilhos(double tx, double ty, double tz, ObjetoGrafico objetoPai){
 		for (ObjetoGrafico objeto : objetoPai.getFilhos()) {
 			objeto.translacaoXYZ(tx, ty, tz);
 		}
 	}
 
+	
+	/**
+	 * Faz a escala em xy
+	 * @param Sx
+	 * @param Sy
+	 */
 	public void escalaXYZ(double Sx,double Sy) {
 		Transformacao4D matrizScale = new Transformacao4D();		
 		matrizScale.atribuirEscala(Sx,Sy,1.0);
@@ -154,6 +191,12 @@ public class ObjetoGrafico {
 		this.escalaFilhos(Sx,Sy,this);
 	}
 	
+	/**
+	 * Escala os filhos em xy
+	 * @param Sx
+	 * @param Sy
+	 * @param objetoPai
+	 */
 	private void escalaFilhos(double Sx,double Sy, ObjetoGrafico objetoPai) {
 		for (ObjetoGrafico objeto : objetoPai.getFilhos()) {
 			objeto.escalaXYZ(Sx, Sy);
@@ -164,30 +207,50 @@ public class ObjetoGrafico {
 		matrizObjeto.atribuirIdentidade();
 	}
 	
+	
+	/**
+	 * Escala em xyz para centro da bbox
+	 * @param escala
+	 * @param ptoFixo
+	 */
 	public void escalaXYZPtoFixo(double escala, Point4D ptoFixo) {
 		matrizGlobal.atribuirIdentidade();
 
 		matrizTmpTranslacao.atribuirTranslacao(ptoFixo.GetX(),ptoFixo.GetY(),ptoFixo.GetZ());
 		matrizGlobal = matrizTmpTranslacao.transformMatrix(matrizGlobal);
 
+		//
 		matrizTmpEscala.atribuirEscala(escala, escala, 1.0);
 		matrizGlobal = matrizTmpEscala.transformMatrix(matrizGlobal);
 
 		ptoFixo.inverterSinal(ptoFixo);
 		matrizTmpTranslacaoInversa.atribuirTranslacao(ptoFixo.GetX(),ptoFixo.GetY(),ptoFixo.GetZ());
 		matrizGlobal = matrizTmpTranslacaoInversa.transformMatrix(matrizGlobal);
-
+		//
+		
 		matrizObjeto = matrizObjeto.transformMatrix(matrizGlobal);
 		
-		this.escalaFixaFilho(escala, ptoFixo, this);
+		this.escalaFixaFilho(escala, this);
 	}
 	
-	public void escalaFixaFilho(double escala, Point4D ptoFixo, ObjetoGrafico objetoPai){
+	/**
+	 * Escala os filhos para ponto fixo
+	 * @param escala
+	 * @param objetoPai
+	 */
+	public void escalaFixaFilho(double escala, ObjetoGrafico objetoPai){
 		for (ObjetoGrafico objeto : objetoPai.getFilhos()) {
-			objeto.escalaFixaFilho(escala, ptoFixo,objeto);
+			Point4D ponto = objeto.bBox.obterCentro();
+			ponto.inverterSinal(ponto);
+			objeto.escalaXYZPtoFixo(escala, ponto);
 		}
 	}
 	
+	/**
+	 * Rotaciona para o centro da bbox
+	 * @param angulo
+	 * @param ptoFixo
+	 */
 	public void rotacaoZPtoFixo(double angulo, Point4D ptoFixo) {
 		matrizGlobal.atribuirIdentidade();
 
@@ -203,12 +266,19 @@ public class ObjetoGrafico {
 
 		matrizObjeto = matrizObjeto.transformMatrix(matrizGlobal);
 		
-		this.rotacaoFilho(angulo, ptoFixo, this);
+		this.rotacaoFilho(angulo, this);
 	}
 
-	public void rotacaoFilho(double angulo, Point4D ptoFixo, ObjetoGrafico objetoPai){
+	/**
+	 * Rotaciona os filhos para um ponto fixo
+	 * @param angulo
+	 * @param objetoPai
+	 */
+	public void rotacaoFilho(double angulo, ObjetoGrafico objetoPai){
 		for (ObjetoGrafico objeto : objetoPai.getFilhos()) {
-			objeto.rotacaoFilho(angulo, ptoFixo,objeto);
+			Point4D ponto = objeto.bBox.obterCentro();
+			ponto.inverterSinal(ponto);
+			objeto.rotacaoZPtoFixo(angulo, ponto);
 		}
 	}
 	
@@ -259,6 +329,9 @@ public class ObjetoGrafico {
 		this.cor = cor;
 	}
 
+	/**
+	 * Troca a primitiva
+	 */
 	public void trocaPrimitiva(){
 		if(this.getPrimitiva() == GL.GL_LINE_LOOP){
 			this.setPrimitiva(GL.GL_LINE_STRIP);

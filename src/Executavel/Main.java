@@ -26,7 +26,9 @@ public class Main implements GLEventListener, KeyListener, MouseListener, MouseM
 	private int antigoX, antigoY = 0;
 	private double posicaoX = 0, posicaoY = 0;
 	
-	//Inicia opengl
+	/* Iniciar
+	 * @see javax.media.opengl.GLEventListener#init(javax.media.opengl.GLAutoDrawable)
+	 */
 	public void init(GLAutoDrawable drawable) {
 		glDrawable = drawable;
 		gl = drawable.getGL();
@@ -35,7 +37,10 @@ public class Main implements GLEventListener, KeyListener, MouseListener, MouseM
 		gl.glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 	}
 	 
-	//exibicaoPrincipal
+	
+	/* Mostra
+	 * @see javax.media.opengl.GLEventListener#display(javax.media.opengl.GLAutoDrawable)
+	 */
 	public void display(GLAutoDrawable arg0) {
 		gl.glClear(GL.GL_COLOR_BUFFER_BIT);
 		
@@ -52,6 +57,10 @@ public class Main implements GLEventListener, KeyListener, MouseListener, MouseM
 		gl.glFlush();
 	}	
 
+	
+	/* Ao apertar mouse
+	 * @see java.awt.event.KeyListener#keyPressed(java.awt.event.KeyEvent)
+	 */
 	public void keyPressed(KeyEvent e) {
 		switch (e.getKeyCode()) {
 		
@@ -71,6 +80,7 @@ public class Main implements GLEventListener, KeyListener, MouseListener, MouseM
 					Mundo.getInstance().alterarCor = true;
 				break;
 			case KeyEvent.VK_F:
+				System.out.println("f");
 				Mundo.getInstance().inserirRaiz = !Mundo.getInstance().inserirRaiz;
 				break;
 				
@@ -140,19 +150,27 @@ public class Main implements GLEventListener, KeyListener, MouseListener, MouseM
 				break;
 			//Fixo
 			case KeyEvent.VK_F3:
-				Mundo.getInstance().getPolignoSelecionado(false).escalaXYZPtoFixo(0.5, new Point4D(-15.0,-15.0,0.0,0.0));
+				Point4D ponto = Mundo.getInstance().getPolignoSelecionado(false).bBox.obterCentro();
+				ponto.inverterSinal(ponto);
+				Mundo.getInstance().getPolignoSelecionado(false).escalaXYZPtoFixo(0.5, ponto);
 				break;
 				
 			case KeyEvent.VK_F5:
-				Mundo.getInstance().getPolignoSelecionado(false).escalaXYZPtoFixo(2.0, new Point4D(-15.0,-15.0,0.0,0.0));
+				Point4D ponto2 = Mundo.getInstance().getPolignoSelecionado(false).bBox.obterCentro();
+				ponto2.inverterSinal(ponto2);
+				Mundo.getInstance().getPolignoSelecionado(false).escalaXYZPtoFixo(2.0, ponto2);
 				break;
 
 			//Rotação
 			case KeyEvent.VK_F1:
-				Mundo.getInstance().getPolignoSelecionado(false).rotacaoZPtoFixo(10.0, new Point4D(-15.0,-15.0,0.0,0.0));
+				Point4D ponto3 = Mundo.getInstance().getPolignoSelecionado(false).bBox.obterCentro();
+				ponto3.inverterSinal(ponto3);
+				Mundo.getInstance().getPolignoSelecionado(false).rotacaoZPtoFixo(10.0, ponto3);
 				break;
 			case KeyEvent.VK_F2:
-				Mundo.getInstance().getPolignoSelecionado(false).rotacaoZPtoFixo(-10.0, new Point4D(-15.0,-15.0,0.0,0.0));
+				Point4D ponto4 = Mundo.getInstance().getPolignoSelecionado(false).bBox.obterCentro();
+				ponto4.inverterSinal(ponto4);
+				Mundo.getInstance().getPolignoSelecionado(false).rotacaoZPtoFixo(-10.0, ponto4);
 				break;
 				
 			case KeyEvent.VK_F4:
@@ -193,7 +211,10 @@ public class Main implements GLEventListener, KeyListener, MouseListener, MouseM
 	    
 	public void mouseReleased(MouseEvent e) {}
 	    
-	//trabalhando com a bbox no ponto incial por enquanto
+	
+	/* Ao clicar no mouse
+	 * @see java.awt.event.MouseListener#mouseClicked(java.awt.event.MouseEvent)
+	 */
 	public void mouseClicked(MouseEvent e) {
 		
 		//Botão direito
@@ -203,15 +224,19 @@ public class Main implements GLEventListener, KeyListener, MouseListener, MouseM
 			return ;
 		}
 		
-		Mundo.getInstance().mouseClique(e.getX(), e.getY(),gl);
+		Mundo.getInstance().mouseClique(e.getX(), e.getY());
 		
 		glDrawable.display();
 	}
 	    
 	public void mouseDragged(MouseEvent e) {}
 	    
-	//Quando o mouse é motivo atualiza o x do rastro
-	//sempre atualiza para zero, caso esta em edição usa a posição do mouse
+	
+	/* 
+	 * Quando o mouse é motivo atualiza o x do rastro
+	 * sempre atualiza para zero, caso esta em edição usa a posição do mouse
+	 * @param java.awt.event.MouseMotionListener#mouseMoved(java.awt.event.MouseEvent)
+	 */
 	public void mouseMoved(MouseEvent e) {
 
 		if(Mundo.getInstance().isListaVazia()){

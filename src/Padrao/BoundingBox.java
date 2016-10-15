@@ -92,6 +92,12 @@ public final class BoundingBox {
 	    	gl.glVertex3d (maiorX, maiorY, maiorZ);
 	    	gl.glVertex3d (maiorX, menorY, maiorZ);
     	gl.glEnd();
+    	/*
+    	processarCentroBBox();
+    	gl.glBegin(GL.GL_POINTS);
+    		gl.glVertex3d(this.centro.GetX(), this.centro.GetY(), this.centro.GetZ());
+    	gl.glEnd();
+    	*/
 	}
 
 	/// Obter menor valor X da BBox.
@@ -126,6 +132,7 @@ public final class BoundingBox {
 	
 	/// Obter ponto do centro da BBox.
 	public Point4D obterCentro() {
+		this.processarCentroBBox();
 		return centro;
 	}
 

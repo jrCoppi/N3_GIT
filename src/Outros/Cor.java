@@ -14,7 +14,12 @@ public class Cor {
 	public static float[] ROXO = { vermelho/2, 0, azul };
 	
 	
-
+	
+	/**
+	 * Combina as cores para facilitar a chamada por constantes
+	 * @param cores array com as cores
+	 * @return
+	 */
 	private static float[] combinarCoresRGB(float[]...cores) {
 		float[] corResultado = new float[3];
 		
