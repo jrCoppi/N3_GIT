@@ -47,6 +47,10 @@ public class ObjetoGrafico {
 		this.setListaIrmaos(new ArrayList<ObjetoGrafico>());
 	}
 	
+	public void setListaPontos(List<Point4D> listaPontos) {
+		this.listaPontos = listaPontos;
+	}
+
 	public void atribuirGL(GL gl) {
 		this.gl = gl;
 	}

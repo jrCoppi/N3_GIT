@@ -1,6 +1,8 @@
 package Principal;
 
 
+import java.util.ArrayList;
+
 import javax.media.opengl.GL;
 import Padrao.Point4D;
 
@@ -365,6 +367,16 @@ public class Mundo {
 				
 				return;
 			}
+			else
+			{
+				int vertice = selecionarVerticeMaisProximo(x, y);
+				this.atualizaPoligonoSelecionado();
+				getPolignoSelecionado(false).setSelecionado(true);
+				//modoSelecao= false; 
+				this.reorganizaPontos(vertice);
+				
+
+			}
 			//pegar vértice mais proximo ao clique
 			
 		}
@@ -380,6 +392,15 @@ public class Mundo {
 					//objSelecionadoMomento = obj;
 					return;
 				}
+//				else
+//				{
+//					int vertice = selecionarVerticeMaisProximo(x, y);
+//					this.atualizaPoligonoSelecionado();
+//					getPolignoSelecionado(false).setSelecionado(true);
+//					modoSelecao= false;
+//					this.getPolignoSelecionado(false).addPonto(this.getPolignoSelecionado(false).getListaPontos().get(vertice));
+//
+//				}
 			//pegar vértice mais proximo ao clique
 			}
 		}
@@ -401,6 +422,35 @@ public class Mundo {
 		
 	}
 
+	
+	/**
+	 * Reorganiza pontos para o clicado ser o ultimo e o cara pdoer continuar editando
+	 * @param vertice indice do vertice atual
+	 */
+	private void reorganizaPontos(int vertice){
+		ObjetoGrafico objeto = this.getPolignoSelecionado(false);
+		
+		Point4D pontoNovo = objeto.getListaPontos().get(vertice);
+		ArrayList<Point4D> novosPontos = new ArrayList<Point4D>();
+		
+		//Depois do vertice
+		for (int i = vertice+1; i < objeto.getListaPontos().size() -1; i++) {
+			novosPontos.add(objeto.getListaPontos().get(i));
+		}
+		
+		//Antes do vertiec
+		for (int i = 0; i < vertice; i++) {
+			novosPontos.add(objeto.getListaPontos().get(i));
+		}
+		
+		//Ultimo vertice
+		novosPontos.add(objeto.getListaPontos().get(vertice));
+		novosPontos.add(objeto.getListaPontos().get(vertice));
+		
+		objeto.setListaPontos(novosPontos);
+	}
+	
+	
 	/**
 	 * Método para verificar se o clique do usuário se interseciona nas interseções do poligno
 	 * @param obj - Objeto gráfico
@@ -438,6 +488,34 @@ public class Mundo {
 		
 		double x = (x1) + (x2-x1) *ti;
 		return x>xi;
+		
+	}
+	
+	private int selecionarVerticeMaisProximo(double x1, double y1) {
+		
+		 double [][] distancia = {{0, Integer.MAX_VALUE}};//ponto,valor
+		 
+		 for (int i = 0; i < this.getPolignoSelecionado(false).getListaPontos().size(); i++)
+		{
+			 
+			 Point4D ponto = this.getPolignoSelecionado(false).getListaPontos().get(i);
+			 
+			 //double reta = (ponto.GetY()-y1)/(ponto.GetX()-x1);
+			 double reta = ((ponto.GetX()-x1) + (  ponto.GetY()-y1));
+			 
+			 if(reta < 0){
+				 reta *= -1;
+			 }
+			 
+			 if(reta<distancia[0][1])
+			 {
+				 distancia[0][0] = i; //ponto;
+				 distancia[0][1] = reta;
+			 }
+			
+		}
+		 
+		 return (int)distancia[0][0];
 		
 	}
 

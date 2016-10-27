@@ -178,10 +178,10 @@ public class Main implements GLEventListener, KeyListener, MouseListener, MouseM
 				 if(Mundo.getInstance().modoSelecao){
 					Mundo.getInstance().modoSelecao = false;
 					Mundo.getInstance().objSelecionadoMomento = null;
+					Mundo.getInstance().modo = 2;
 				 }
 				 else {
 					 Mundo.getInstance().modoSelecao = true;
-					 Mundo.getInstance().modo = 1;
 				 }
 				break;
 		}
